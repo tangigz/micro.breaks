@@ -71,9 +71,19 @@ export function view(st: EngineState, now: number): MainView {
     }
   }
 
+  let level = 100;
+  if (mode === 'normal') level = 100 * (1 - seatedMs / interval);
+  if (mode === 'overdue') level = 0;
+  if (mode === 'lunch' && st.dayStartedAt != null && st.seatedSince != null) {
+    // Lunch counts as a break: the battery refills over the hour, full when it ends.
+    const atLunch = Math.max(0, 100 * (1 - Math.max(0, d.lunchStart - st.seatedSince) / interval));
+    const progress = (now - d.lunchStart) / (d.lunchEnd - d.lunchStart);
+    level = atLunch + (100 - atLunch) * Math.min(1, Math.max(0, progress));
+  }
+
   return {
     mode,
-    level: mode === 'normal' ? 100 * (1 - seatedMs / interval) : mode === 'overdue' ? 0 : 100,
+    level,
     seatedMs,
     nextBreakInMs: mode === 'normal' ? interval - seatedMs : 0,
     overdueByMs: mode === 'overdue' ? seatedMs - interval : 0,

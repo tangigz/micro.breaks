@@ -391,11 +391,21 @@ describe('main screen modes', () => {
       seatedMs: 15 * MIN,
     });
     s.leave().until('12:45');
-    expect(s.view()).toMatchObject({ mode: 'lunch', level: 100 });
+    // Empty since 10:15, a quarter into its lunch refill.
+    expect(s.view()).toMatchObject({ mode: 'lunch', level: 25 });
     s.until('18:05');
     expect(s.view()).toMatchObject({ mode: 'done', level: 100 });
     s.until('2026-10-10 10:00');
     expect(s.view().mode).toBe('weekend');
+  });
+
+  it('at lunch the battery refills over the hour', () => {
+    const s = sim(at('12:00')).work().until('12:30');
+    expect(s.view().level).toBe(50);
+    s.until('13:00');
+    expect(s.view()).toMatchObject({ mode: 'lunch', level: 75 });
+    s.until('13:29');
+    expect(s.view().level).toBeGreaterThan(99);
   });
 
   it('lunch ends an open break timer and a pending question', () => {

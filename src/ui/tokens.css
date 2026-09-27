@@ -1,11 +1,13 @@
 /*
  * Design tokens from the Claude Design export (docs/design/), which is the
  * source of truth over the spec's style guide where they differ.
- * Dark is the default; <html data-theme="light"> switches to light.
+ * Dark is the default; data-theme="light" switches to light, on <html> or on
+ * any element (the screen gallery shows both side by side).
  */
 @import 'tailwindcss';
 
-:root {
+:root,
+[data-theme='dark'] {
   --bg: #0b0b0c;
   --raised: #1c1c1e;
   --band: #141416;
@@ -27,7 +29,8 @@
   --batt-full: #6fcf7a;
   --batt-half: #ffc56b;
   --batt-empty: #ff8a5b;
-  --batt-idle: rgb(99 99 102);
+  --batt-idle-rgb: 99 99 102;
+  --batt-idle: rgb(var(--batt-idle-rgb));
   --glow-min: 0.18;
   --glow-max: 0.42;
   --glow-idle: 0.1;
@@ -35,7 +38,7 @@
   color-scheme: dark;
 }
 
-:root[data-theme='light'] {
+[data-theme='light'] {
   --bg: #ffffff;
   --raised: #f5f5f7;
   --band: #fafafb;
@@ -53,7 +56,8 @@
   --att-bg: #fff4dc;
   --dot-off: #d1d1d6;
 
-  --batt-idle: rgb(199 199 204);
+  --batt-idle-rgb: 199 199 204;
+  --batt-idle: rgb(var(--batt-idle-rgb));
   --glow-min: 0.16;
   --glow-max: 0.4;
   --glow-idle: 0.18;
@@ -122,6 +126,36 @@ body {
 :focus-visible {
   outline: 2px solid var(--ink);
   outline-offset: 3px;
+}
+
+[data-theme] {
+  background: var(--bg);
+  color: var(--ink);
+}
+
+/* Battery: the fill breathes and a light shine rises through it (spec › Motion). */
+@keyframes mb-breathe {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.75;
+  }
+}
+@keyframes mb-rise {
+  0% {
+    transform: translateY(120%);
+  }
+  100% {
+    transform: translateY(-320%);
+  }
+}
+.mb-breathe {
+  animation: mb-breathe 3.2s ease-in-out infinite;
+}
+.mb-shine {
+  animation: mb-rise 3.4s cubic-bezier(0.2, 0.8, 0.2, 1) infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {

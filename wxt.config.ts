@@ -38,11 +38,13 @@ export default defineConfig({
       }
     : { disabled: true },
   hooks: {
-    // The dev panel never ships in the test-week build.
+    // The dev panel and the screen gallery never ship in the test-week build.
     'entrypoints:resolved': (wxt, entrypoints) => {
       if (wxt.config.mode !== 'production') return;
-      const i = entrypoints.findIndex((e) => e.name === 'dev');
-      if (i >= 0) entrypoints.splice(i, 1);
+      for (const name of ['dev', 'gallery']) {
+        const i = entrypoints.findIndex((e) => e.name === name);
+        if (i >= 0) entrypoints.splice(i, 1);
+      }
     },
   },
   manifest: {

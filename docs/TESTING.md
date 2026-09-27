@@ -57,6 +57,7 @@ Only in dev builds; it never ships in the test-week build.
 - **You**: play the person. **Leave the computer** counts as idle after 5 fake minutes, like Chrome does; **Lock the screen** counts at once. **At the computer** is coming back.
 - **Chrome**: closed for 3, 10 or 40 min, then reopened.
 - **Last events**: what the engine just logged.
+- **Screen gallery** (link at the top): every state of every designed screen, dark and light, side by side, to compare with the design export (`docs/design/`). Each state is produced by running the real rules engine to that moment of a day.
 
 ### Recipes
 

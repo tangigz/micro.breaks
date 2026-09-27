@@ -83,12 +83,15 @@ export function App() {
           <Wordmark />
           <span className="text-meta text-ink-2">Dev panel</span>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-4">
           <a className="text-meta text-ink-2 underline" href="/newtab.html" target="_blank">
             Main screen
           </a>
           <a className="text-meta text-ink-2 underline" href="/prompt.html" target="_blank">
             Prompt
+          </a>
+          <a className="text-meta text-ink-2 underline" href="/gallery.html" target="_blank">
+            Screen gallery
           </a>
         </div>
       </header>

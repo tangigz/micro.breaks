@@ -6,7 +6,8 @@ import { MONDAY, expect, test } from './fixtures';
 test('before the first activity, the main screen waits for the day', async ({ dev, openPage }) => {
   await dev({ cmd: 'freshDay', at: `${MONDAY}T08:55` });
   const tab = await openPage('/newtab.html');
-  await expect(tab.getByText('before', { exact: true })).toBeVisible();
+  await expect(tab.getByText('Before working hours')).toBeVisible();
+  await expect(tab.getByRole('heading', { name: '9:00' })).toBeVisible();
 });
 
 test('at zero the prompt opens in a new tab, after a heads-up', async ({ dev, engine, promptTab }) => {
@@ -76,9 +77,35 @@ test('lunch is silent and the battery is full after it', async ({ dev, engine, o
   await dev({ cmd: 'freshDay', at: `${MONDAY}T12:20` });
   await dev({ cmd: 'forward', minutes: 15 });
   const tab = await openPage('/newtab.html');
-  await expect(tab.getByText('lunch', { exact: true })).toBeVisible();
+  await expect(tab.getByRole('heading', { name: 'Lunch.' })).toBeVisible();
   await dev({ cmd: 'forward', minutes: 60 });
   const st = await engine();
   expect(st.lunchEndHandled).toBe(true);
   expect(st.episode).toBeNull();
+});
+
+test('the main screen counts down, and the theme toggle is remembered', async ({ dev, engine, openPage }) => {
+  await dev({ cmd: 'freshDay', at: `${MONDAY}T09:00` });
+  await dev({ cmd: 'forward', minutes: 42 });
+  const tab = await openPage('/newtab.html');
+  await expect(tab.getByRole('timer')).toHaveText(/^1[78]:\d\d$/);
+  await expect(tab.getByText('since your last active break')).toContainText('42 min');
+  await expect(tab.getByRole('img', { name: /Battery at 30 percent/ })).toBeVisible();
+
+  await tab.getByRole('button', { name: 'Switch to light mode' }).click();
+  await expect(tab.locator('html')).toHaveAttribute('data-theme', 'light');
+  await expect.poll(async () => (await engine()).settings.theme).toBe('light');
+  const again = await openPage('/newtab.html');
+  await expect(again.locator('html')).toHaveAttribute('data-theme', 'light');
+});
+
+test('overdue after the prompt, with the next reminder', async ({ dev, openPage, promptTab }) => {
+  await dev({ cmd: 'freshDay', at: `${MONDAY}T09:00` });
+  await dev({ cmd: 'forward', minutes: 60 });
+  await (await promptTab()).keyboard.press('Escape');
+  await dev({ cmd: 'forward', minutes: 8 });
+  const tab = await openPage('/newtab.html');
+  await expect(tab.getByText('Break overdue by')).toBeVisible();
+  await expect(tab.getByText(/reminder 2 of 3 at 10:10/)).toBeVisible();
+  await expect(tab.getByRole('img', { name: 'Battery empty, your break is due' })).toBeVisible();
 });
