@@ -23,8 +23,10 @@ export function App() {
       theme={theme}
       notificationsOff={health?.notifications === 'denied'}
       onStartBreak={() => sendAction({ type: 'openPrompt' })}
-      // The movement timer (#7) and the recap (#10) come in their own slices.
-      onOpenTimer={() => {}}
+      onOpenTimer={() => {
+        location.href = '/settings.html';
+      }}
+      // The recap comes with #10.
       onOpenRecap={() => {}}
       onToggleTheme={() =>
         sendAction({ type: 'updateSettings', settings: { theme: theme === 'light' ? 'dark' : 'light' } })

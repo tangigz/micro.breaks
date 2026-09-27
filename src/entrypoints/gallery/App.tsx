@@ -4,6 +4,8 @@ import { dayStats } from '@/data/stats';
 import { sim } from '@/engine/testing';
 import { chipLabel, mainContent, type MainContext } from '@/entrypoints/newtab/content';
 import { MainScreen } from '@/entrypoints/newtab/MainScreen';
+import { draftFrom, type Draft, type Field } from '@/entrypoints/settings/sentence';
+import { SettingsScreen } from '@/entrypoints/settings/SettingsScreen';
 import { SetupScreen } from '@/entrypoints/setup/SetupScreen';
 import { setupSteps } from '@/entrypoints/setup/steps';
 import { NO_PROGRESS, type SetupProgress } from '@/lib/setup';
@@ -123,6 +125,26 @@ function setupShot(progress: SetupProgress, allowed: boolean) {
   return Shot;
 }
 
+function timerShot(editing: Field | null, change: Partial<Draft> = {}) {
+  const Shot = (theme: Theme) => (
+    <SettingsScreen
+      frame
+      draft={{ ...draftFrom(DEFAULT_SETTINGS, 'office'), ...change }}
+      editing={editing}
+      theme={theme}
+      onOpen={() => {}}
+      onPick={() => {}}
+      onStep={() => {}}
+      onDone={() => {}}
+      onTogglePlace={() => {}}
+      onSave={() => {}}
+      onBack={() => {}}
+      onToggleTheme={() => {}}
+    />
+  );
+  return Shot;
+}
+
 const groups: { title: string; shots: { name: string; render: (theme: Theme) => ReactNode }[] }[] = [
   {
     title: 'First-run setup',
@@ -133,6 +155,14 @@ const groups: { title: string; shots: { name: string; render: (theme: Theme) => 
         render: setupShot({ timer: true, testSent: true, confirmed: false }, true),
       },
       { name: 'Setup, all done', render: setupShot({ timer: true, testSent: true, confirmed: true }, true) },
+    ],
+  },
+  {
+    title: 'Movement timer',
+    shots: [
+      { name: '1b · Movement timer', render: timerShot(null) },
+      { name: '1c · Picking a time', render: timerShot('dayStart') },
+      { name: 'Movement timer, impossible day', render: timerShot(null, { dayEnd: 8 * 60 }) },
     ],
   },
   {

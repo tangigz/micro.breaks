@@ -4,7 +4,8 @@ Newest first. Each entry is reflected in `docs/spec.html`.
 
 ## 2026-09-27 · First-run setup
 
-- **"Edit" on step 1 is hidden until the movement timer screen exists (#7)**, rather than shown doing nothing.
+- **The movement timer screen (#7) ships with the setup**, so step 1 offers **Edit** and **Keep these** as designed. Opened from the setup, **Save** returns there with step 1 checked; from the main screen's timer chip, it returns to the main screen.
+- **Movement timer: impossible days can't be saved** (the design doesn't cover it): "Your day has to end after it starts.", "Lunch has to end after it starts.", "Lunch has to fit inside your day." The sentence has no "and during [meetings]" in M1.
 - **"Allow" opens Chrome's notification settings**: an extension can't ask for the notification permission itself (it's granted at install); the step checks again when the tab regains focus.
 - **The test notification is real** (the design's toast is a picture of the macOS alert): "Notifications work." with a Close button, staying until closed.
 - **Setup progress is kept** in storage; the pinned tab shows the setup on Chrome start until it's done. The engine runs either way.

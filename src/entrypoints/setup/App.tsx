@@ -36,7 +36,7 @@ export function App() {
     settings: state.settings,
     place: state.place,
     notificationsAllowed: allowed,
-    canEdit: false,
+    canEdit: true,
   });
 
   const onAction = async (a: StepAction) => {
@@ -44,7 +44,8 @@ export function App() {
       case 'keep':
         return saveSetup({ timer: true });
       case 'edit':
-        return; // The movement timer screen comes with #7.
+        location.href = '/settings.html?from=setup';
+        return;
       case 'allow':
         // Extensions can't ask for this permission; Chrome's own setting turns it back on.
         return browser.tabs.create({ url: 'chrome://settings/content/notifications' });
