@@ -4,17 +4,27 @@ import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
-  { ignores: ['.output/', '.wxt/', 'node_modules/', 'docs/'] },
+  {
+    ignores: [
+      '.output/',
+      '.wxt/',
+      'node_modules/',
+      'docs/',
+      '.dev-profile/',
+      'test-results/',
+      'playwright-report/',
+    ],
+  },
   js.configs.recommended,
   ...tseslint.configs.recommended,
-  reactHooks.configs.flat['recommended-latest'],
+  { ...reactHooks.configs.flat['recommended-latest'], files: ['src/**/*.{ts,tsx}'] },
   {
     languageOptions: {
       globals: { ...globals.browser, ...globals.webextensions },
     },
   },
   {
-    files: ['scripts/**', '*.config.*'],
+    files: ['scripts/**', 'tests/**', '*.config.*'],
     languageOptions: { globals: globals.node },
   },
   {

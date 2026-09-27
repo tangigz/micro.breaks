@@ -8,5 +8,6 @@ Closes #
 
 ## How to test
 
-1. `npm install && npm run dev` (opens a Chrome window with the extension loaded)
-2.
+Setup (see docs/TESTING.md): `gh pr checkout <number> && npm install && npm run dev`, then open a new tab › **Dev panel**.
+
+1.
