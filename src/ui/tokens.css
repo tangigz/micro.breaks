@@ -93,7 +93,8 @@
   --text-hero--letter-spacing: -0.05em;
   --text-headline: 104px;
   --text-headline--line-height: 100px;
-  --text-headline--letter-spacing: -0.045em;
+  /* -0.045em in the design, tuned for another font: SF Pro needs more air ("Ti" touched). */
+  --text-headline--letter-spacing: -0.03em;
   --text-display: 44px;
   --text-display--line-height: 48px;
   --text-display--letter-spacing: -0.02em;

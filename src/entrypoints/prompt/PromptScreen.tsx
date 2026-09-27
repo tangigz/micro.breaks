@@ -61,7 +61,7 @@ export function PromptScreen(p: PromptScreenProps) {
 
       <main className="flex w-[1120px] max-w-[calc(100%-80px)] flex-1 flex-col justify-center gap-12 pb-14">
         <div className="flex flex-col gap-3">
-          <h1 className="m-0 text-[120px] leading-[112px] font-bold tracking-[-0.045em]">Time to move.</h1>
+          <h1 className="m-0 text-[120px] leading-[112px] font-bold tracking-[-0.03em]">Time to move.</h1>
           <div className="text-section text-ink-2 font-semibold">
             <span className={p.due ? 'text-att' : 'text-ink'}>{duration(p.seatedMs / 60_000)}</span> since
             your last active break
@@ -94,9 +94,6 @@ export function PromptScreen(p: PromptScreenProps) {
                   <span className="flex flex-col gap-1">
                     <span className="text-title font-bold">{it.label}</span>
                     <span className={`text-meta ${on ? 'text-ink-2' : 'text-ink-3'}`}>{routine}</span>
-                  </span>
-                  <span className="text-eyebrow text-ink-3 absolute top-3.5 right-4 font-medium tracking-normal">
-                    {it.key}
                   </span>
                 </button>
               );
