@@ -2,6 +2,16 @@
 
 Newest first. Each entry is reflected in `docs/spec.html`.
 
+## 2026-09-27 · Rules engine
+
+- **Unanswered episode** fails 5 min after the third reminder (+20 min).
+- **Nothing interrupts while away or on the break timer.** Reminders that come due then are dropped; later ones still fire. Because chrome.idle only reports idle 5 min after the last input, a prompt can still open just after you leave; the break counts when you come back and the episode succeeds.
+- **Break timer ends while you're at the computer**: it closes 1 min after zero (the idle signal and the timer end land on the same second when you left right after the click), nothing logged.
+- **"Still here?"** shows on activity seen 30 s or more after Start my break.
+- **"Did you step away?"** holds prompts until answered; no answer after 5 min counts as seated, then the prompt follows if due.
+- **Computer asleep with Chrome open** (no tick for 6+ min) counts as away from the last tick.
+- **Time away is clipped** to working hours outside lunch, and can't start before Chrome started.
+
 ## 2026-09-27 · Before the build
 
 - **No calendar in M1.** Google Calendar needs a Google Cloud project and OAuth client; too much setup for a one-person test week. Prompts may fire during calls, and a silent call of 5+ min counts as a break. Meeting states, "Skip my meetings" and the "meetings" token are designed but not built. Calendar moves to M2.
