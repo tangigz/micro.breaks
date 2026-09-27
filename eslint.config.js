@@ -14,6 +14,10 @@ export default tseslint.config(
     },
   },
   {
+    files: ['scripts/**', '*.config.*'],
+    languageOptions: { globals: globals.node },
+  },
+  {
     // The rules engine is pure: no browser, no clock, no storage.
     files: ['src/engine/**/*.ts'],
     rules: {
