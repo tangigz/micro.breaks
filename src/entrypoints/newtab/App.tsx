@@ -1,4 +1,5 @@
 import { clock } from '@/engine';
+import { DEV_TOOLS } from '@/lib/clock';
 import { duration, mmss } from '@/lib/format';
 import { sendAction } from '@/lib/messages';
 import { Pill } from '@/ui/Pill';
@@ -15,7 +16,12 @@ export function App() {
     <div className="flex min-h-screen flex-col">
       <header className="flex items-center justify-between px-10 py-6">
         <Wordmark />
-        <span className="text-meta text-ink-2">
+        <span className="text-meta text-ink-2 flex gap-4">
+          {DEV_TOOLS && (
+            <a href="/dev.html" className="underline">
+              Dev panel
+            </a>
+          )}
           Today · {v.breaksToday} of {v.goal}
         </span>
       </header>

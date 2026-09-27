@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { Intent } from '@/engine';
 import { mmss } from '@/lib/format';
 import { sendAction } from '@/lib/messages';
@@ -16,19 +16,30 @@ const INTENTS: { id: Intent; label: string }[] = [
 // by hand. The designed screens replace it in #8 and #9.
 export function App() {
   const { state, now } = useEngine();
-  const [intent, setIntent] = useState<Intent>('energy');
+  const [intent, setIntentState] = useState<Intent>('energy');
+  // Keys can arrive faster than a re-render ("2" then Enter): read the choice from a ref.
+  const intentRef = useRef<Intent>('energy');
+  const setIntent = (i: Intent) => {
+    intentRef.current = i;
+    setIntentState(i);
+  };
+  const stateRef = useRef(state);
+  useEffect(() => {
+    stateRef.current = state;
+  }, [state]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (state?.breakTimer || state?.pendingRecharge) return;
+      const st = stateRef.current;
+      if (st?.breakTimer || st?.pendingRecharge) return;
       const k = ['1', '2', '3'].indexOf(e.key);
       if (k >= 0) setIntent(INTENTS[k]!.id);
-      if (e.key === 'Enter') void sendAction({ type: 'chooseBreak', intent });
+      if (e.key === 'Enter') void sendAction({ type: 'chooseBreak', intent: intentRef.current });
       if (e.key === 'Escape') void sendAction({ type: 'remindLater' });
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [intent, state]);
+  }, []);
 
   if (!state) return null;
   const bt = state.breakTimer;

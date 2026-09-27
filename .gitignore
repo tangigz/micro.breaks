@@ -9,3 +9,6 @@ coverage/
 !.env.example
 stats.html
 web-ext.config.ts
+.dev-profile/
+test-results/
+playwright-report/

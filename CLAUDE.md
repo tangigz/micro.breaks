@@ -33,10 +33,11 @@ src/
 
 ## Commands
 
-- `npm run dev`: builds to `.output/chrome-mv3-dev` with hot reload (load it once via chrome://extensions › Load unpacked; Chrome 137+ can't auto-load extensions)
-- `npm run check`: typecheck, lint, format check, tests, build (what CI runs)
-- `npm test` / `npm run test:watch`
+- `npm run dev`: opens Chrome for Testing (Playwright's) with the extension, profile in `.dev-profile/`, hot reload. Chrome 137+ can't auto-load extensions, hence Chrome for Testing.
+- `npm run check`: typecheck, lint, format check, unit tests, build
+- `npm run e2e`: builds the dev extension and runs Playwright tests in Chrome for Testing (`tests/e2e/`), driving the dev clock
+- Dev builds have a dev panel (`dev.html`): fake clock, simulated presence, fast-forward. It never ships in production builds. See `docs/TESTING.md`.
 
 ## Workflow
 
-One build-plan slice = one GitHub issue = one branch = one PR into `main`. PRs need green CI and the owner's review; never merge or enable auto-merge yourself. Each PR description ends with a "How to test" checklist.
+One build-plan slice = one GitHub issue = one branch = one PR into `main`. PRs need green CI and the owner's review; never merge or enable auto-merge yourself. Each PR description ends with a "How to test" checklist written for the dev panel (docs/TESTING.md), and new rules get an e2e test when they involve tabs, keys or notifications.
