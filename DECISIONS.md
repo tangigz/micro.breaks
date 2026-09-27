@@ -2,6 +2,12 @@
 
 Newest first. Each entry is reflected in `docs/spec.html`.
 
+## 2026-09-27 · Break prompt
+
+- **The three breaks live in `src/content/breaks.json`** (the spec says `content/breaks.json`; inside `src/` so the build can import it). Each has a card illustration per intent (bolt, brain, chair) and an activity illustration for the break timer (bolt or footprints at home, droplet, raising hands).
+- **"1 h 02 since your last active break" is amber only when the break is due.** Opened early with Start a break now, the time shows in ink ("42 min").
+- **The prompt tab keeps the choice local** until Start my break; reopening the tab starts again from Energy.
+
 ## 2026-09-27 · First-run setup
 
 - **The movement timer screen (#7) ships with the setup**, so step 1 offers **Edit** and **Keep these** as designed. Opened from the setup, **Save** returns there with step 1 checked; from the main screen's timer chip, it returns to the main screen.

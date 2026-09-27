@@ -90,3 +90,10 @@ export const ChevronDownIcon = (p: P) => (
     <path d="m6 9 6 6 6-6" />
   </Base>
 );
+
+export const ClockIcon = (p: P) => (
+  <Base {...p}>
+    <circle cx="12" cy="12" r="10" />
+    <path d="M12 6v6l4 2" />
+  </Base>
+);

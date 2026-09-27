@@ -109,3 +109,35 @@ test('overdue after the prompt, with the next reminder', async ({ dev, openPage,
   await expect(tab.getByText(/reminder 2 of 3 at 10:10/)).toBeVisible();
   await expect(tab.getByRole('img', { name: 'Battery empty, your break is due' })).toBeVisible();
 });
+
+test('the prompt: time since the last break, three cards, keys 1 2 3', async ({ dev, promptTab }) => {
+  await dev({ cmd: 'freshDay', at: `${MONDAY}T09:00` });
+  await dev({ cmd: 'forward', minutes: 62 });
+  const prompt = await promptTab();
+  await expect(prompt.getByText('since your last active break')).toContainText('1 h 02');
+  const cards = prompt.getByRole('radio');
+  await expect(cards).toHaveCount(3);
+  await expect(prompt.getByRole('radio', { name: 'Energy, Take the stairs' })).toHaveAttribute(
+    'aria-checked',
+    'true',
+  );
+  await prompt.keyboard.press('3');
+  await expect(prompt.getByRole('radio', { name: 'Pain relief, Stand and stretch' })).toHaveAttribute(
+    'aria-checked',
+    'true',
+  );
+  await prompt.getByRole('radio', { name: 'Focus, Get some water' }).click();
+  await expect(prompt.getByRole('radio', { name: 'Focus, Get some water' })).toHaveAttribute(
+    'aria-checked',
+    'true',
+  );
+});
+
+test('working from home, Energy is "Walk around"', async ({ dev, openPage }) => {
+  await dev({ cmd: 'freshDay', at: `${MONDAY}T09:00` });
+  const settings = await openPage('/settings.html');
+  await settings.getByRole('button', { name: /^Place, from the office/ }).click();
+  await settings.getByRole('button', { name: 'Save' }).click();
+  const prompt = await openPage('/prompt.html');
+  await expect(prompt.getByRole('radio', { name: 'Energy, Walk around' })).toBeVisible();
+});

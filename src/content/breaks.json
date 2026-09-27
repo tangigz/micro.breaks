@@ -1,0 +1,26 @@
+{
+  "breaks": [
+    {
+      "id": "stairs",
+      "intent": "energy",
+      "name": "Take the stairs",
+      "cue": "Up and down a floor or two, at an easy pace.",
+      "img": "high-voltage",
+      "home": { "name": "Walk around", "cue": "A few laps of the flat, no phone.", "img": "footprints" }
+    },
+    {
+      "id": "water",
+      "intent": "focus",
+      "name": "Get some water",
+      "cue": "Refill your water, look out of a window on the way.",
+      "img": "droplet"
+    },
+    {
+      "id": "stretch",
+      "intent": "relief",
+      "name": "Stand and stretch",
+      "cue": "Stand up, roll your shoulders, reach up, walk a few steps.",
+      "img": "raising-hands"
+    }
+  ]
+}
