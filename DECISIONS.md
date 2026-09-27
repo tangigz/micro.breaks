@@ -2,6 +2,12 @@
 
 Newest first. Each entry is reflected in `docs/spec.html`.
 
+## 2026-09-27 · Main screen
+
+- **At lunch the battery refills gradually** over the lunch hour, from its level at lunch start to full at lunch end (the design animates "fills up to green"). Lunch is still not logged as a break.
+- **"Done for today" writes the longest stretch in minutes** ("longest 72 min"), as the design does; the recap uses "1 h 12".
+- **Recap and movement timer links** (Today pill, See your day, timer chip) are in place but open nothing until #7 and #10. **Turn on** in the health line opens Chrome's notification settings until the setup (#6) exists.
+
 ## 2026-09-27 · Rules engine
 
 - **Unanswered episode** fails 5 min after the third reminder (+20 min).
