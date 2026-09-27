@@ -306,7 +306,8 @@ footer{margin-top:72px;padding-top:20px;border-top:1px solid var(--line);color:v
         <div class="rule"><dt>What counts as a break</dt><dd><b>At least <span class="num">5 min</span> in a row with no activity on the computer</b>: idle or screen locked, prompted or not. Under 5 min, it is not a break and the seated time keeps running.</dd></div>
         <div class="rule"><dt>Screen locked</dt><dd>Treated like idle. Locked under 5 min: nothing happens, the seated timer keeps running. Locked 5 min or more: a break is logged for the whole away time. On return, the battery is recharged to 100% and the seated timer restarts from 0.</dd></div>
         <div class="rule"><dt>Not a break</dt><dd>Nothing is excluded in M1. A silent call of 5+ min with no input counts as a break; accepted for the test week.</dd></div>
-        <div class="rule"><dt>Chrome closed</dt><dd>Nothing is tracked while Chrome is closed. On reopening, the gap since the last recorded activity decides:
+        <div class="rule"><dt>Computer asleep</dt><dd>Chrome open but no tick for 6+ min (lid closed): counted as away from the last tick, so 5+ min is a break.</dd></div>
+         <div class="rule"><dt>Chrome closed</dt><dd>Nothing is tracked while Chrome is closed. On reopening, the gap since the last recorded activity decides:
           <ol style="margin:6px 0 0;padding-left:20px;display:grid;gap:3px">
             <li><b>Under 5 min</b> (update, crash, restart): counted as seated. No question.</li>
             <li><b>5 min or more</b>: the startup tab asks once, "Chrome was closed for 40 min. Did you step away?" <b>Yes, I moved</b> logs a break and fills the battery. <b>No, I kept working</b> counts the gap as seated.</li>
@@ -367,6 +368,8 @@ footer{margin-top:72px;padding-top:20px;border-top:1px solid var(--line);color:v
         <div class="rule"><dt>After the reminders</dt><dd>If no break is taken, the next prompt comes one interval after the first prompt (e.g. 11:00, then 12:00).</dd></div>
         <div class="rule"><dt>Reminder action</dt><dd>Reminders are notifications only; they never open a tab on their own. Their <b>Start break</b> reopens the prompt tab (the same one if still open) and switches to it.</dd></div>
          <div class="rule"><dt>After Skip or a failed episode</dt><dd>No heads-up: the battery is already empty. The next prompt fires one interval after the skipped or failed prompt.</dd></div>
+         <div class="rule"><dt>Unanswered</dt><dd>An episode fails 5 min after the third reminder (+20 min) if no break was logged.</dd></div>
+         <div class="rule"><dt>While away</dt><dd>Once the computer reports you away (idle 5 min, or locked), or while the break timer runs, nothing interrupts: prompts wait, reminders that come due are dropped (later ones still fire). The computer only reports idle 5 min after the last input, so a prompt can still open in the first minutes after you leave; the break counts when you come back.</dd></div>
         <div class="rule"><dt>Prompt episode</dt><dd>A prompt plus its reminders, until it resolves. It <b>succeeds</b> when a break is logged, and <b>fails</b> on a skip, after the third unanswered reminder, or at day end. An episode still open when lunch starts is <b>cut</b> and left out of the goal. This is the unit of the 80% goal.</dd></div>
       </dl>
 
