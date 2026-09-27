@@ -8,6 +8,6 @@ Closes #
 
 ## How to test
 
-Setup (see docs/TESTING.md): `gh pr checkout <number> && npm install && npm run dev`, then open a new tab › **Dev panel**.
+Setup (see docs/TESTING.md): `cd ~/Developer/micro.breaks && gh pr checkout <number> && npm install && npm run dev`, then open a new tab › **Dev panel**.
 
 1.

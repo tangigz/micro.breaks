@@ -13,8 +13,11 @@ CI runs the first two on every pull request. The third is yours.
 ## Once
 
 ```bash
+cd ~/Developer/micro.breaks
 npm install
 ```
+
+Every command in this guide runs from that folder.
 
 This also downloads **Chrome for Testing** (about 150 MB, once), a separate browser used only for testing. Your own Chrome and its profile are never touched.
 
@@ -22,9 +25,10 @@ On macOS, allow its notifications once: **System Settings › Notifications › 
 
 ## Test a pull request by hand
 
-1. Get the pull request's code (replace `15` with its number):
+1. In a terminal, go to the project and get the pull request's code (replace `15` with its number):
 
    ```bash
+   cd ~/Developer/micro.breaks
    gh pr checkout 15
    ```
 
