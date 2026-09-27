@@ -19,6 +19,7 @@ src/
   entrypoints/  WXT entrypoints (background.ts, newtab/, …); thin, no rule logic
   ui/           design-system components and tokens.css
   data/         Dexie db, event log, derived day stats
+  lib/          shared helpers: messages between screens and background, formatting
   assets/       Fluent Emoji 3D illustrations (MIT)
 ```
 
@@ -32,7 +33,7 @@ src/
 
 ## Commands
 
-- `npm run dev`: Chrome window with the extension, hot reload
+- `npm run dev`: builds to `.output/chrome-mv3-dev` with hot reload (load it once via chrome://extensions › Load unpacked; Chrome 137+ can't auto-load extensions)
 - `npm run check`: typecheck, lint, format check, tests, build (what CI runs)
 - `npm test` / `npm run test:watch`
 
