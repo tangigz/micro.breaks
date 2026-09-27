@@ -1,0 +1,134 @@
+/*
+ * Design tokens from the Claude Design export (docs/design/), which is the
+ * source of truth over the spec's style guide where they differ.
+ * Dark is the default; <html data-theme="light"> switches to light.
+ */
+@import 'tailwindcss';
+
+:root {
+  --bg: #0b0b0c;
+  --raised: #1c1c1e;
+  --band: #141416;
+  --pill: #2c2c2e;
+  --line: #2c2c2e;
+  --line-2: #3a3a3c;
+  --ink: #f5f5f7;
+  --ink-2: #a1a1a6;
+  --ink-3: #636366;
+  --on-ink: #0b0b0c;
+  --pos: #6fcf7a;
+  --on-pos: #0b0b0c;
+  --pos-bg: #16301a;
+  --att: #ffc56b;
+  --att-bg: #33260d;
+  --dot-off: #48484a;
+
+  /* Battery: the only live colour. Interpolated in code, full → half → empty. */
+  --batt-full: #6fcf7a;
+  --batt-half: #ffc56b;
+  --batt-empty: #ff8a5b;
+  --batt-idle: rgb(99 99 102);
+  --glow-min: 0.18;
+  --glow-max: 0.42;
+  --glow-idle: 0.1;
+
+  color-scheme: dark;
+}
+
+:root[data-theme='light'] {
+  --bg: #ffffff;
+  --raised: #f5f5f7;
+  --band: #fafafb;
+  --pill: #ebebef;
+  --line: #e5e5ea;
+  --line-2: #d1d1d6;
+  --ink: #111111;
+  --ink-2: #6e6e73;
+  --ink-3: #aeaeb2;
+  --on-ink: #ffffff;
+  --pos: #2e7d32;
+  --on-pos: #ffffff;
+  --pos-bg: #e8f5e9;
+  --att: #9a5b00;
+  --att-bg: #fff4dc;
+  --dot-off: #d1d1d6;
+
+  --batt-idle: rgb(199 199 204);
+  --glow-min: 0.16;
+  --glow-max: 0.4;
+  --glow-idle: 0.18;
+
+  color-scheme: light;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-raised: var(--raised);
+  --color-band: var(--band);
+  --color-pill: var(--pill);
+  --color-line: var(--line);
+  --color-line-2: var(--line-2);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-on-ink: var(--on-ink);
+  --color-pos: var(--pos);
+  --color-on-pos: var(--on-pos);
+  --color-pos-bg: var(--pos-bg);
+  --color-att: var(--att);
+  --color-att-bg: var(--att-bg);
+  --color-dot-off: var(--dot-off);
+
+  --font-sans: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Inter', system-ui, sans-serif;
+
+  /* Type scale: size / line-height, weight, tracking (spec › Typography) */
+  --text-hero: 160px;
+  --text-hero--line-height: 144px;
+  --text-hero--letter-spacing: -0.05em;
+  --text-headline: 104px;
+  --text-headline--line-height: 100px;
+  --text-headline--letter-spacing: -0.045em;
+  --text-display: 44px;
+  --text-display--line-height: 48px;
+  --text-display--letter-spacing: -0.02em;
+  --text-sentence: 40px;
+  --text-sentence--line-height: 64px;
+  --text-sentence--letter-spacing: -0.02em;
+  --text-title: 28px;
+  --text-title--line-height: 34px;
+  --text-title--letter-spacing: -0.015em;
+  --text-section: 22px;
+  --text-section--line-height: 28px;
+  --text-section--letter-spacing: -0.01em;
+  --text-body: 17px;
+  --text-body--line-height: 24px;
+  --text-meta: 15px;
+  --text-meta--line-height: 20px;
+  --text-eyebrow: 13px;
+  --text-eyebrow--line-height: 16px;
+  --text-eyebrow--letter-spacing: 0.08em;
+}
+
+html,
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
+}
+
+:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
