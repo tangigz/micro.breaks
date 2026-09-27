@@ -5,12 +5,13 @@
  */
 import type { IdleState } from '@/engine';
 import { runDevCommand, simulatedIdle } from '@/background/dev';
-import { kindOf, notificationsAllowed } from '@/background/notifications';
+import { kindOf, notificationsAllowed, TEST_NOTIFICATION } from '@/background/notifications';
 import { dispatch, WAKE_ALARM } from '@/background/run';
-import { ensureHomeTab, openHomeTab } from '@/background/tabs';
+import { ensureHomeTab, openHomeTab, openSetupTab } from '@/background/tabs';
 import { DEV_TOOLS } from '@/lib/clock';
 import type { DevMessage } from '@/lib/dev';
 import { HEALTH_KEY, type ActionMessage, type Health } from '@/lib/messages';
+import { readSetup } from '@/lib/setup';
 
 const TICK_ALARM = 'tick';
 /** System-wide input; "idle" fires at exactly the 5-min break threshold. */
@@ -21,15 +22,16 @@ export default defineBackground(() => {
 
   browser.runtime.onInstalled.addListener(async ({ reason }) => {
     await ensureAlarms();
-    // First-run setup (#6) will open here; until then, the home tab.
-    if (reason === 'install') await openHomeTab();
+    // Health first, so the setup knows at once whether notifications are allowed.
     await tick();
+    if (reason === 'install') await openSetupTab();
   });
 
   browser.runtime.onStartup.addListener(async () => {
     await ensureAlarms();
     await dispatch({ type: 'startup' });
-    await ensureHomeTab();
+    const setup = await readSetup();
+    await ensureHomeTab(setup.timer && setup.confirmed);
     await tick();
   });
 
@@ -59,6 +61,7 @@ export default defineBackground(() => {
 
   // Every notification's button (and a click on its body) does the one thing it offers.
   const onNotification = (id: string) => {
+    if (id === TEST_NOTIFICATION) return void browser.notifications.clear(id);
     const kind = kindOf(id);
     if (!kind) return;
     void browser.notifications.clear(id);

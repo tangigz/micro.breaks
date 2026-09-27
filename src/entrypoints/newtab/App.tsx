@@ -23,15 +23,18 @@ export function App() {
       theme={theme}
       notificationsOff={health?.notifications === 'denied'}
       onStartBreak={() => sendAction({ type: 'openPrompt' })}
-      // The movement timer (#7) and the recap (#10) come in their own slices.
-      onOpenTimer={() => {}}
+      onOpenTimer={() => {
+        location.href = '/settings.html';
+      }}
+      // The recap comes with #10.
       onOpenRecap={() => {}}
       onToggleTheme={() =>
         sendAction({ type: 'updateSettings', settings: { theme: theme === 'light' ? 'dark' : 'light' } })
       }
       onGapAnswer={(moved) => sendAction({ type: 'gapAnswer', moved })}
-      // First-run setup (#6) will walk through this; until then, Chrome's notification settings.
-      onTurnOnNotifications={() => browser.tabs.create({ url: 'chrome://settings/content/notifications' })}
+      onTurnOnNotifications={() => {
+        location.href = '/setup.html';
+      }}
       devLink={DEV_TOOLS}
     />
   );

@@ -66,3 +66,27 @@ export const BellOffIcon = (p: P) => (
     <path d="m2 2 20 20" />
   </Base>
 );
+
+export const CheckIcon = (p: P) => (
+  <Base strokeWidth={2.5} {...p}>
+    <path d="M20 6 9 17l-5-5" />
+  </Base>
+);
+
+export const ChevronLeftIcon = (p: P) => (
+  <Base strokeWidth={2} {...p}>
+    <path d="m15 18-6-6 6-6" />
+  </Base>
+);
+
+export const ChevronUpIcon = (p: P) => (
+  <Base strokeWidth={2} {...p}>
+    <path d="m18 15-6-6-6 6" />
+  </Base>
+);
+
+export const ChevronDownIcon = (p: P) => (
+  <Base strokeWidth={2} {...p}>
+    <path d="m6 9 6 6 6-6" />
+  </Base>
+);
