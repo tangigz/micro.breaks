@@ -19,7 +19,7 @@ interface Fixtures {
   control: Page;
   dev: (command: DevCommand) => Promise<void>;
   engine: () => Promise<EngineState>;
-  openPage: (path: '/newtab.html' | '/prompt.html') => Promise<Page>;
+  openPage: (path: '/newtab.html' | '/prompt.html' | '/setup.html') => Promise<Page>;
   /** The prompt tab once the extension opened it. */
   promptTab: () => Promise<Page>;
 }

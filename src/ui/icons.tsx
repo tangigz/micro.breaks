@@ -66,3 +66,9 @@ export const BellOffIcon = (p: P) => (
     <path d="m2 2 20 20" />
   </Base>
 );
+
+export const CheckIcon = (p: P) => (
+  <Base strokeWidth={2.5} {...p}>
+    <path d="M20 6 9 17l-5-5" />
+  </Base>
+);

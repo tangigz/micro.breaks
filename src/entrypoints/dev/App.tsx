@@ -1,5 +1,6 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { DEV_PRESENCE_KEY, type DevCommand, type PresenceMode } from '@/lib/dev';
+import { SETUP_KEY } from '@/lib/setup';
 import { db, type StoredEvent } from '@/data/db';
 import { clock } from '@/engine';
 import { currentDevClock } from '@/lib/clock';
@@ -93,6 +94,16 @@ export function App() {
           <a className="text-meta text-ink-2 underline" href="/gallery.html" target="_blank">
             Screen gallery
           </a>
+          <button
+            type="button"
+            className="text-meta text-ink-2 cursor-pointer underline"
+            onClick={async () => {
+              await browser.storage.local.remove(SETUP_KEY);
+              window.open('/setup.html', '_blank');
+            }}
+          >
+            Show setup again
+          </button>
         </div>
       </header>
 

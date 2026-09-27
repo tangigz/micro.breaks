@@ -43,7 +43,7 @@ On macOS, allow its notifications once: **System Settings › Notifications › 
 
 3. Open a new tab, click **Dev panel** (top right), and follow the **How to test** list in the pull request.
 
-4. Done? Stop with `Ctrl+C` in the terminal.
+4. Done? Stop with `Ctrl+C` in the terminal. **Always stop it before checking out another pull request**: switching branches while it runs makes it rebuild into a closed browser and crash with "CDP connection closed" (harmless, but confusing).
 
 The test browser keeps its state between runs (in `.dev-profile/`). To start clean, quit it and delete that folder.
 
@@ -57,6 +57,7 @@ Only in dev builds; it never ships in the test-week build.
 - **You**: play the person. **Leave the computer** counts as idle after 5 fake minutes, like Chrome does; **Lock the screen** counts at once. **At the computer** is coming back.
 - **Chrome**: closed for 3, 10 or 40 min, then reopened.
 - **Last events**: what the engine just logged.
+- **Show setup again** (link at the top): forgets the first-run setup's progress and opens it, as right after installing.
 - **Screen gallery** (link at the top): every state of every designed screen, dark and light, side by side, to compare with the design export (`docs/design/`). Each state is produced by running the real rules engine to that moment of a day.
 
 ### Recipes

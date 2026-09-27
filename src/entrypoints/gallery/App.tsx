@@ -1,8 +1,12 @@
-import type { LogEvent, Theme } from '@/engine';
+import type { ReactNode } from 'react';
+import { DEFAULT_SETTINGS, type LogEvent, type Theme } from '@/engine';
 import { dayStats } from '@/data/stats';
 import { sim } from '@/engine/testing';
 import { chipLabel, mainContent, type MainContext } from '@/entrypoints/newtab/content';
 import { MainScreen } from '@/entrypoints/newtab/MainScreen';
+import { SetupScreen } from '@/entrypoints/setup/SetupScreen';
+import { setupSteps } from '@/entrypoints/setup/steps';
+import { NO_PROGRESS, type SetupProgress } from '@/lib/setup';
 import { Wordmark } from '@/ui/Wordmark';
 
 // Dev builds only: every main-screen state, dark and light, to compare with the
@@ -75,7 +79,7 @@ const frames: Frame[] = [
 
 const SCALE = 0.45;
 
-function Shot({ f, theme }: { f: Frame; theme: Theme }) {
+function mainShot(f: Frame, theme: Theme) {
   const ctx: MainContext = {
     settings: f.s.state.settings,
     now: f.s.now,
@@ -84,24 +88,67 @@ function Shot({ f, theme }: { f: Frame; theme: Theme }) {
     ...f.ctx,
   };
   return (
+    <MainScreen
+      frame
+      content={mainContent(f.s.view(), ctx)}
+      chipLabel={chipLabel(f.s.state.settings, f.s.now)}
+      theme={theme}
+      notificationsOff={!!f.notificationsOff}
+      onStartBreak={() => {}}
+      onOpenTimer={() => {}}
+      onOpenRecap={() => {}}
+      onToggleTheme={() => {}}
+      onGapAnswer={() => {}}
+      onTurnOnNotifications={() => {}}
+    />
+  );
+}
+
+function setupShot(progress: SetupProgress, allowed: boolean) {
+  const Shot = (theme: Theme) => (
+    <SetupScreen
+      frame
+      steps={setupSteps(progress, {
+        settings: DEFAULT_SETTINGS,
+        place: 'office',
+        notificationsAllowed: allowed,
+        canEdit: false,
+      })}
+      theme={theme}
+      onAction={() => {}}
+      onStart={() => {}}
+      onToggleTheme={() => {}}
+    />
+  );
+  return Shot;
+}
+
+const groups: { title: string; shots: { name: string; render: (theme: Theme) => ReactNode }[] }[] = [
+  {
+    title: 'First-run setup',
+    shots: [
+      { name: '0 · First-run setup, notifications not allowed', render: setupShot(NO_PROGRESS, false) },
+      {
+        name: 'Setup, test sent',
+        render: setupShot({ timer: true, testSent: true, confirmed: false }, true),
+      },
+      { name: 'Setup, all done', render: setupShot({ timer: true, testSent: true, confirmed: true }, true) },
+    ],
+  },
+  {
+    title: 'Main screen',
+    shots: frames.map((f) => ({ name: f.name, render: (t: Theme) => mainShot(f, t) })),
+  },
+];
+
+function Framed({ theme, children }: { theme: Theme; children: ReactNode }) {
+  return (
     <div
       style={{ width: 1440 * SCALE, height: 900 * SCALE }}
       className="overflow-hidden rounded-xl shadow-lg"
     >
       <div data-theme={theme} style={{ transform: `scale(${SCALE})`, transformOrigin: '0 0' }}>
-        <MainScreen
-          frame
-          content={mainContent(f.s.view(), ctx)}
-          chipLabel={chipLabel(f.s.state.settings, f.s.now)}
-          theme={theme}
-          notificationsOff={!!f.notificationsOff}
-          onStartBreak={() => {}}
-          onOpenTimer={() => {}}
-          onOpenRecap={() => {}}
-          onToggleTheme={() => {}}
-          onGapAnswer={() => {}}
-          onTurnOnNotifications={() => {}}
-        />
+        {children}
       </div>
     </div>
   );
@@ -112,16 +159,21 @@ export function App() {
     <div className="flex flex-col gap-10 p-10">
       <div className="flex items-baseline gap-3">
         <Wordmark />
-        <span className="text-meta text-ink-2">Screen gallery · main screen · dark and light</span>
+        <span className="text-meta text-ink-2">Screen gallery · dark and light</span>
       </div>
-      {frames.map((f) => (
-        <section key={f.name} className="flex flex-col gap-3">
-          <h2 className="text-meta text-ink-2 m-0 font-medium">{f.name}</h2>
-          <div className="flex flex-wrap gap-6">
-            <Shot f={f} theme="dark" />
-            <Shot f={f} theme="light" />
-          </div>
-        </section>
+      {groups.map((g) => (
+        <div key={g.title} className="flex flex-col gap-8">
+          <h1 className="text-title m-0 font-bold">{g.title}</h1>
+          {g.shots.map((shot) => (
+            <section key={shot.name} className="flex flex-col gap-3">
+              <h2 className="text-meta text-ink-2 m-0 font-medium">{shot.name}</h2>
+              <div className="flex flex-wrap gap-6">
+                <Framed theme="dark">{shot.render('dark')}</Framed>
+                <Framed theme="light">{shot.render('light')}</Framed>
+              </div>
+            </section>
+          ))}
+        </div>
       ))}
     </div>
   );

@@ -31,6 +31,22 @@ export async function clearNotifications(except: NotificationKind[] = []) {
   );
 }
 
+export const TEST_NOTIFICATION = 'mb-test';
+
+/** Setup step 2: proves notifications arrive and stay until closed. */
+export async function showTestNotification() {
+  await browser.notifications.clear(TEST_NOTIFICATION);
+  await browser.notifications.create(TEST_NOTIFICATION, {
+    type: 'basic',
+    iconUrl: browser.runtime.getURL('/icon/128.png'),
+    title: 'Notifications work.',
+    message: "This one stays until you close it. That's how your breaks will reach you.",
+    buttons: [{ title: 'Close' }],
+    requireInteraction: true,
+    priority: 2,
+  });
+}
+
 export async function notificationsAllowed(): Promise<boolean> {
   return (await browser.notifications.getPermissionLevel()) === 'granted';
 }

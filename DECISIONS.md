@@ -2,6 +2,13 @@
 
 Newest first. Each entry is reflected in `docs/spec.html`.
 
+## 2026-09-27 · First-run setup
+
+- **"Edit" on step 1 is hidden until the movement timer screen exists (#7)**, rather than shown doing nothing.
+- **"Allow" opens Chrome's notification settings**: an extension can't ask for the notification permission itself (it's granted at install); the step checks again when the tab regains focus.
+- **The test notification is real** (the design's toast is a picture of the macOS alert): "Notifications work." with a Close button, staying until closed.
+- **Setup progress is kept** in storage; the pinned tab shows the setup on Chrome start until it's done. The engine runs either way.
+
 ## 2026-09-27 · Main screen
 
 - **At lunch the battery refills gradually** over the lunch hour, from its level at lunch start to full at lunch end (the design animates "fills up to green"). Lunch is still not logged as a break.
