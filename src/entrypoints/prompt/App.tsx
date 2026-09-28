@@ -1,11 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
-import { INTENTS } from '@/content/breaks';
-import type { Intent } from '@/engine';
+import { activityFor, INTENTS } from '@/content/breaks';
+import { MIN, type Intent } from '@/engine';
 import { sendAction } from '@/lib/messages';
 import { useTheme } from '@/ui/theme';
 import { useEngine } from '@/ui/useEngine';
 import { PromptScreen } from './PromptScreen';
-import { TemporaryBreak } from './Temporary';
+import { RechargedScreen } from '@/ui/RechargedScreen';
+import { useActivityWatch } from '@/ui/useActivityWatch';
+import { BreakTimerScreen } from './BreakTimerScreen';
 
 /** The prompt tab: the prompt, then the break timer and "Recharged." in the same tab. */
 export function App() {
@@ -42,9 +44,63 @@ export function App() {
     return () => window.removeEventListener('keydown', onKey);
   }, []);
 
+  useActivityWatch(state?.breakTimer ?? null);
+
+  // "Recharged." seen elsewhere (the main screen): this tab has nothing left to say.
+  const showedRecharge = useRef(false);
+  useEffect(() => {
+    if (state?.pendingRecharge) showedRecharge.current = true;
+    else if (showedRecharge.current) window.close();
+  }, [state?.pendingRecharge]);
+
   if (!state || !view) return null;
-  if (state.breakTimer || state.pendingRecharge) return <TemporaryBreak state={state} now={now} />;
   const theme = state.settings.theme;
+  const toggleTheme = () =>
+    sendAction({ type: 'updateSettings', settings: { theme: theme === 'light' ? 'dark' : 'light' } });
+  // Back to the main screen, which shows the overdue state (spec › I'm back, Cancel break).
+  const toMain = () => {
+    location.href = '/newtab.html';
+  };
+
+  if (state.pendingRecharge) {
+    return (
+      <RechargedScreen
+        recharge={state.pendingRecharge}
+        goal={view.goal}
+        theme={theme}
+        onBack={async () => {
+          await sendAction({ type: 'rechargeSeen' });
+          window.close();
+        }}
+        onToggleTheme={toggleTheme}
+      />
+    );
+  }
+
+  const bt = state.breakTimer;
+  if (bt) {
+    const info = INTENTS.find((i) => i.intent === bt.intent)!;
+    return (
+      <BreakTimerScreen
+        intent={info}
+        activity={activityFor(bt.intent, state.place)}
+        elapsedMs={bt.ended ? bt.lengthMin * MIN : bt.lengthMin * MIN - (bt.endsAt - now)}
+        lengthMin={bt.lengthMin}
+        early={bt.early}
+        theme={theme}
+        onLength={(m) => sendAction({ type: 'setBreakLength', lengthMin: m })}
+        onBack={async () => {
+          await sendAction({ type: 'imBack' });
+          toMain();
+        }}
+        onCancel={async () => {
+          await sendAction({ type: 'cancelBreak' });
+          toMain();
+        }}
+        onToggleTheme={toggleTheme}
+      />
+    );
+  }
 
   return (
     <PromptScreen
@@ -57,9 +113,7 @@ export function App() {
       onStart={() => sendAction({ type: 'chooseBreak', intent: intentRef.current })}
       onLater={() => sendAction({ type: 'remindLater' })}
       onSkip={() => sendAction({ type: 'skip' })}
-      onToggleTheme={() =>
-        sendAction({ type: 'updateSettings', settings: { theme: theme === 'light' ? 'dark' : 'light' } })
-      }
+      onToggleTheme={toggleTheme}
     />
   );
 }

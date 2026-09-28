@@ -1,0 +1,312 @@
+/*
+ * "Recharged." (spec › Motion › Recharge): fill 14% → 100%, coral → amber → green
+ * (2.2 s) → glow and two ripples → bolt pops and floats, eight particles burst →
+ * copy rises in, "+N min" counts up, today's dot pops. Base styles are the final
+ * state, so reduced motion (and the screen gallery) show it directly.
+ */
+@keyframes rc-fill {
+  0% {
+    height: 14%;
+    background-color: #ff8a5b;
+  }
+  45% {
+    background-color: #ffc56b;
+  }
+  100% {
+    height: 100%;
+    background-color: #6fcf7a;
+  }
+}
+@keyframes rc-wave {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+@keyframes rc-bubble {
+  0% {
+    transform: translateY(0);
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.9;
+  }
+  100% {
+    transform: translateY(-320px);
+    opacity: 0;
+  }
+}
+@keyframes rc-glow {
+  0% {
+    box-shadow: 0 0 0 0 rgb(111 207 122 / 0);
+  }
+  40% {
+    box-shadow: 0 0 80px 16px rgb(111 207 122 / 0.55);
+  }
+  100% {
+    box-shadow: 0 0 40px 0 rgb(111 207 122 / 0.22);
+  }
+}
+@keyframes rc-ripple {
+  0% {
+    transform: scale(0.7);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1.9);
+    opacity: 0;
+  }
+}
+@keyframes rc-pop {
+  0% {
+    transform: translateY(60px) scale(0) rotate(-20deg);
+    opacity: 0;
+  }
+  60% {
+    transform: translateY(-14px) scale(1.2) rotate(8deg);
+    opacity: 1;
+  }
+  100% {
+    transform: none;
+    opacity: 1;
+  }
+}
+@keyframes rc-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+@keyframes rc-rise {
+  0% {
+    transform: translateY(28px);
+    opacity: 0;
+  }
+  100% {
+    transform: none;
+    opacity: 1;
+  }
+}
+@keyframes rc-dot {
+  0% {
+    transform: scale(0);
+  }
+  70% {
+    transform: scale(1.5);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+@keyframes rc-halo {
+  0% {
+    opacity: 0.35;
+    transform: translate(calc(-50% + 60px), calc(-50% + 10px)) scale(0.8);
+  }
+  60% {
+    opacity: 1;
+    transform: translate(calc(-50% + 60px), calc(-50% + 10px)) scale(1.08);
+  }
+  100% {
+    opacity: 0.8;
+    transform: translate(calc(-50% + 60px), calc(-50% + 10px)) scale(1);
+  }
+}
+@keyframes rc-burst {
+  0% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(var(--dx), var(--dy)) scale(0.2);
+    opacity: 0;
+  }
+}
+
+.rc-play .rc-fill {
+  animation: rc-fill 2.2s cubic-bezier(0.3, 0.7, 0.2, 1) 0.3s both;
+}
+.rc-play .rc-wave {
+  animation: rc-wave 1.4s linear infinite;
+}
+.rc-play .rc-bubble {
+  animation: rc-bubble var(--d, 2.4s) ease-in var(--delay, 0.4s) infinite;
+}
+.rc-glow {
+  box-shadow: 0 0 40px 0 rgb(111 207 122 / 0.22);
+}
+.rc-play .rc-glow {
+  animation: rc-glow 1.6s ease-out 2.4s both;
+}
+.rc-ripple {
+  opacity: 0;
+}
+.rc-play .rc-ripple {
+  animation: rc-ripple 1.4s ease-out var(--delay, 2.4s) both;
+}
+.rc-play .rc-pop {
+  animation: rc-pop 0.8s cubic-bezier(0.2, 0.8, 0.2, 1.2) 2.4s both;
+}
+.rc-play .rc-float {
+  animation: rc-float 3s ease-in-out 3.2s infinite;
+}
+.rc-play .rc-rise {
+  animation: rc-rise 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) var(--delay, 2.5s) both;
+}
+.rc-play .rc-dot {
+  animation: rc-dot 0.5s cubic-bezier(0.2, 0.8, 0.2, 1.2) 3.2s both;
+}
+.rc-halo {
+  transform: translate(calc(-50% + 60px), calc(-50% + 10px));
+}
+.rc-play .rc-halo {
+  animation: rc-halo 2.4s ease-out 0.3s both;
+}
+.rc-particle {
+  opacity: 0;
+}
+.rc-play .rc-particle {
+  animation: rc-burst var(--t, 1.1s) ease-out var(--delay, 2.45s) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rc-play * {
+    animation: none !important;
+  }
+}
+
+/* Bubbles rise through the fill while it plays; hidden in the final state. */
+.rc-bubble {
+  opacity: 0;
+}
+
+/* The eight burst particles: size, colour, direction, timing (from the design). */
+.rc-particle {
+  position: absolute;
+  border-radius: 999px;
+}
+.rc-particle:nth-child(1) {
+  --dx: -150px;
+  --dy: -110px;
+  --t: 1.1s;
+  --delay: 2.45s;
+  width: 14px;
+  height: 14px;
+  margin: -7px;
+  background: #6fcf7a;
+}
+.rc-particle:nth-child(2) {
+  --dx: 150px;
+  --dy: -120px;
+  --t: 1.1s;
+  --delay: 2.5s;
+  width: 10px;
+  height: 10px;
+  margin: -5px;
+  background: #ffc56b;
+}
+.rc-particle:nth-child(3) {
+  --dx: -90px;
+  --dy: -190px;
+  --t: 1.2s;
+  --delay: 2.45s;
+  width: 12px;
+  height: 12px;
+  margin: -6px;
+  border-radius: 3px;
+  background: #8ec5ff;
+}
+.rc-particle:nth-child(4) {
+  --dx: 100px;
+  --dy: -200px;
+  --t: 1.2s;
+  --delay: 2.55s;
+  width: 14px;
+  height: 14px;
+  margin: -7px;
+  background: #6fcf7a;
+}
+.rc-particle:nth-child(5) {
+  --dx: -190px;
+  --dy: -20px;
+  --t: 1s;
+  --delay: 2.5s;
+  width: 10px;
+  height: 10px;
+  margin: -5px;
+  background: #c9b6ff;
+}
+.rc-particle:nth-child(6) {
+  --dx: 190px;
+  --dy: -30px;
+  --t: 1s;
+  --delay: 2.45s;
+  width: 12px;
+  height: 12px;
+  margin: -6px;
+  border-radius: 3px;
+  background: #ffc56b;
+}
+.rc-particle:nth-child(7) {
+  --dx: -20px;
+  --dy: -230px;
+  --t: 1.3s;
+  --delay: 2.5s;
+  width: 10px;
+  height: 10px;
+  margin: -5px;
+  background: #8ec5ff;
+}
+.rc-particle:nth-child(8) {
+  --dx: 40px;
+  --dy: -150px;
+  --t: 1.1s;
+  --delay: 2.6s;
+  width: 12px;
+  height: 12px;
+  margin: -6px;
+  background: #6fcf7a;
+}
+
+.rc-bubble:nth-child(2) {
+  --d: 2.4s;
+  --delay: 0.4s;
+  left: 30px;
+  width: 10px;
+  height: 10px;
+}
+.rc-bubble:nth-child(3) {
+  --d: 2.8s;
+  --delay: 1s;
+  left: 90px;
+  width: 7px;
+  height: 7px;
+}
+.rc-bubble:nth-child(4) {
+  --d: 2.2s;
+  --delay: 1.6s;
+  left: 130px;
+  width: 12px;
+  height: 12px;
+}
+.rc-bubble:nth-child(5) {
+  --d: 3s;
+  --delay: 0.8s;
+  left: 60px;
+  width: 6px;
+  height: 6px;
+}
+.rc-bubble {
+  position: absolute;
+  bottom: 10px;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.55);
+}

@@ -97,3 +97,17 @@ export const ClockIcon = (p: P) => (
     <path d="M12 6v6l4 2" />
   </Base>
 );
+
+export const MonitorIcon = (p: P) => (
+  <Base {...p}>
+    <rect x="2" y="4" width="20" height="13" rx="2" />
+    <path d="M8 21h8M12 17v4" />
+  </Base>
+);
+
+export const AlertCircleIcon = (p: P) => (
+  <Base {...p}>
+    <circle cx="12" cy="12" r="10" />
+    <path d="M12 8v4M12 16h.01" />
+  </Base>
+);

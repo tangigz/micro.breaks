@@ -30,6 +30,8 @@ export const test = base.extend<Fixtures>({
     const context = await chromium.launchPersistentContext('', {
       channel: 'chromium',
       headless: !process.env.HEADED,
+      // Final states at once ("Recharged." animation, count-up), unless watching headed.
+      reducedMotion: process.env.HEADED ? 'no-preference' : 'reduce',
       args: [`--disable-extensions-except=${EXTENSION}`, `--load-extension=${EXTENSION}`],
     });
     await use(context);

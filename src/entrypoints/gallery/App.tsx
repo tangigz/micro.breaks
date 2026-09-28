@@ -1,15 +1,25 @@
 import type { ReactNode } from 'react';
-import { DEFAULT_SETTINGS, type Intent, type LogEvent, type Place, type Theme } from '@/engine';
+import { activityFor, INTENTS } from '@/content/breaks';
+import {
+  DEFAULT_SETTINGS,
+  type Intent,
+  type LogEvent,
+  type Place,
+  type Recharge,
+  type Theme,
+} from '@/engine';
 import { dayStats } from '@/data/stats';
 import { sim } from '@/engine/testing';
 import { chipLabel, mainContent, type MainContext } from '@/entrypoints/newtab/content';
 import { MainScreen } from '@/entrypoints/newtab/MainScreen';
+import { BreakTimerScreen } from '@/entrypoints/prompt/BreakTimerScreen';
 import { PromptScreen } from '@/entrypoints/prompt/PromptScreen';
 import { draftFrom, type Draft, type Field } from '@/entrypoints/settings/sentence';
 import { SettingsScreen } from '@/entrypoints/settings/SettingsScreen';
 import { SetupScreen } from '@/entrypoints/setup/SetupScreen';
 import { setupSteps } from '@/entrypoints/setup/steps';
 import { NO_PROGRESS, type SetupProgress } from '@/lib/setup';
+import { RechargedScreen } from '@/ui/RechargedScreen';
 import { Wordmark } from '@/ui/Wordmark';
 
 // Dev builds only: every main-screen state, dark and light, to compare with the
@@ -126,6 +136,40 @@ function setupShot(progress: SetupProgress, allowed: boolean) {
   return Shot;
 }
 
+function timerRunShot(intent: Intent, place: Place, elapsedSec: number, lengthMin: number, early: boolean) {
+  const Shot = (theme: Theme) => (
+    <BreakTimerScreen
+      frame
+      intent={INTENTS.find((i) => i.intent === intent)!}
+      activity={activityFor(intent, place)}
+      elapsedMs={elapsedSec * 1000}
+      lengthMin={lengthMin}
+      early={early}
+      theme={theme}
+      onLength={() => {}}
+      onBack={() => {}}
+      onCancel={() => {}}
+      onToggleTheme={() => {}}
+    />
+  );
+  return Shot;
+}
+
+function rechargedShot(recharge: Recharge) {
+  const Shot = (theme: Theme) => (
+    <RechargedScreen
+      frame
+      play={false}
+      recharge={recharge}
+      goal={8}
+      theme={theme}
+      onBack={() => {}}
+      onToggleTheme={() => {}}
+    />
+  );
+  return Shot;
+}
+
 function promptShot(place: Place, intent: Intent, seatedMin: number) {
   const Shot = (theme: Theme) => (
     <PromptScreen
@@ -193,6 +237,32 @@ const groups: { title: string; shots: { name: string; render: (theme: Theme) => 
       {
         name: 'Break prompt, opened early with Start a break now',
         render: promptShot('office', 'energy', 42),
+      },
+    ],
+  },
+  {
+    title: 'Break timer',
+    shots: [
+      { name: '3 · Break timer', render: timerRunShot('energy', 'office', 38, 5, false) },
+      {
+        name: 'Break timer, Walk around at home, 10 min',
+        render: timerRunShot('energy', 'home', 330, 10, false),
+      },
+      { name: 'Break timer, Focus', render: timerRunShot('focus', 'office', 90, 5, false) },
+      { name: 'Break timer, back too early', render: timerRunShot('relief', 'office', 150, 5, true) },
+    ],
+  },
+  {
+    title: 'Break done',
+    shots: [
+      { name: '4 · Break done', render: rechargedShot({ source: 'timer', minutes: 6, breakNumber: 3 }) },
+      {
+        name: 'Recharged, unprompted break',
+        render: rechargedShot({ source: 'away', minutes: 10, breakNumber: 3 }),
+      },
+      {
+        name: 'Recharged after Chrome was closed',
+        render: rechargedShot({ source: 'gap', minutes: 40, breakNumber: 1 }),
       },
     ],
   },
