@@ -8,6 +8,7 @@ import {
   idleDetectionMs,
   IDLE_DETECTION,
   initialState,
+  normalizeState,
   step,
   type Effect,
   type EngineState,
@@ -63,9 +64,7 @@ export async function resetState(): Promise<void> {
 
 export async function loadState(): Promise<EngineState> {
   const got = await browser.storage.local.get(STATE_KEY);
-  const st = got[STATE_KEY] as EngineState | undefined;
-  if (!st || st.version !== 1) return initialState(st?.settings);
-  return st;
+  return normalizeState(got[STATE_KEY]);
 }
 
 export async function runStep(input: Input) {

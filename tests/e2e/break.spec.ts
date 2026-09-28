@@ -1,4 +1,8 @@
+import type { browser } from 'wxt/browser';
 import { MONDAY, expect, test } from './fixtures';
+
+/** `chrome` inside extension pages, where page.evaluate() callbacks run. */
+declare const chrome: typeof browser;
 
 test.beforeEach(async ({ dev }) => {
   await dev({ cmd: 'freshDay', at: `${MONDAY}T09:00` });
@@ -118,4 +122,30 @@ test('"Recharged." waits until its tab is in front, then plays', async ({ contex
     window.dispatchEvent(new Event('focus'));
   });
   await expect(prompt.locator('.rc-play')).toHaveCount(1);
+});
+
+test('a break timer saved by an older version still shows a countdown, not NaN', async ({
+  control,
+  dev,
+  openPage,
+}) => {
+  await dev({ cmd: 'forward', minutes: 60 });
+  // What the previous version saved: an end time, no time away.
+  await control.evaluate(async () => {
+    const got = await chrome.storage.local.get('engine');
+    const st = got.engine as Record<string, unknown>;
+    const t = Date.now();
+    st.breakTimer = {
+      startedAt: t,
+      endsAt: t + 300_000,
+      intent: 'energy',
+      lengthMin: 5,
+      early: false,
+      ended: false,
+    };
+    await chrome.storage.local.set({ engine: st });
+  });
+  const tab = await openPage('/prompt.html');
+  await expect(tab.getByRole('timer')).toHaveText('5:00');
+  await expect(tab.getByText('to start the timer.')).toBeVisible();
 });
