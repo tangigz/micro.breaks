@@ -25,6 +25,8 @@ if (chrome) mkdirSync(profile, { recursive: true });
 // See docs/spec.html › Tech › Stack for why each permission is needed.
 export default defineConfig({
   srcDir: 'src',
+  // The e2e tests build into their own folder, so they never touch a running `npm run dev`.
+  outDirTemplate: process.env.MB_E2E ? '{{browser}}-mv{{manifestVersion}}-e2e' : undefined,
   modules: ['@wxt-dev/module-react'],
   vite: () => ({
     plugins: [tailwindcss()],

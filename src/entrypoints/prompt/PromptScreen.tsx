@@ -20,14 +20,6 @@ export interface PromptScreenProps {
   frame?: boolean;
 }
 
-function Key({ children }: { children: string }) {
-  return (
-    <kbd className="border-line text-ink inline-flex h-6 items-center rounded-md border px-1.5 font-[inherit]">
-      {children}
-    </kbd>
-  );
-}
-
 /** Design frame "2 · Break prompt": opens in a new tab when the battery hits zero. */
 export function PromptScreen(p: PromptScreenProps) {
   return (
@@ -45,18 +37,7 @@ export function PromptScreen(p: PromptScreenProps) {
 
       <header className="flex w-full items-center justify-between px-10 py-7">
         <Wordmark size={17} />
-        <div className="text-eyebrow text-ink-2 flex items-center gap-4 font-medium tracking-normal">
-          <span className="flex items-center gap-1.5">
-            <Key>1 2 3</Key>Choose
-          </span>
-          <span className="flex items-center gap-1.5">
-            <Key>Enter</Key>Start
-          </span>
-          <span className="flex items-center gap-1.5">
-            <Key>Esc</Key>Remind me later
-          </span>
-          <ThemeToggle theme={p.theme} onToggle={p.onToggleTheme} />
-        </div>
+        <ThemeToggle theme={p.theme} onToggle={p.onToggleTheme} />
       </header>
 
       <main className="flex w-[1120px] max-w-[calc(100%-80px)] flex-1 flex-col justify-center gap-12 pb-14">

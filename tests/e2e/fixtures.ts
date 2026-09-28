@@ -7,7 +7,7 @@ import type { DevCommand } from '../../src/lib/dev';
 /** `chrome` inside extension pages, where page.evaluate() callbacks run. */
 declare const chrome: typeof browser;
 
-const EXTENSION = resolve('.output/chrome-mv3-dev');
+const EXTENSION = resolve('.output/chrome-mv3-e2e');
 
 /** Monday 5 October 2026: every test runs on the same fake workday. */
 export const MONDAY = '2026-10-05';
