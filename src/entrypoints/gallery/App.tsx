@@ -136,15 +136,15 @@ function setupShot(progress: SetupProgress, allowed: boolean) {
   return Shot;
 }
 
-function timerRunShot(intent: Intent, place: Place, elapsedSec: number, lengthMin: number, early: boolean) {
+function timerRunShot(intent: Intent, place: Place, awaySec: number, lengthMin: number, away: boolean) {
   const Shot = (theme: Theme) => (
     <BreakTimerScreen
       frame
       intent={INTENTS.find((i) => i.intent === intent)!}
       activity={activityFor(intent, place)}
-      elapsedMs={elapsedSec * 1000}
+      awayMs={awaySec * 1000}
       lengthMin={lengthMin}
-      early={early}
+      away={away}
       theme={theme}
       onLength={() => {}}
       onBack={() => {}}
@@ -243,13 +243,23 @@ const groups: { title: string; shots: { name: string; render: (theme: Theme) => 
   {
     title: 'Break timer',
     shots: [
-      { name: '3 · Break timer', render: timerRunShot('energy', 'office', 38, 5, false) },
+      {
+        name: 'Break timer, waiting for you to leave',
+        render: timerRunShot('energy', 'office', 0, 5, false),
+      },
+      {
+        name: '3 · Break timer, counting while you are away',
+        render: timerRunShot('energy', 'office', 38, 5, true),
+      },
       {
         name: 'Break timer, Walk around at home, 10 min',
-        render: timerRunShot('energy', 'home', 330, 10, false),
+        render: timerRunShot('energy', 'home', 330, 10, true),
       },
-      { name: 'Break timer, Focus', render: timerRunShot('focus', 'office', 90, 5, false) },
-      { name: 'Break timer, back too early', render: timerRunShot('relief', 'office', 150, 5, true) },
+      { name: 'Break timer, Focus', render: timerRunShot('focus', 'office', 90, 5, true) },
+      {
+        name: 'Break timer, back too early (paused)',
+        render: timerRunShot('relief', 'office', 150, 5, false),
+      },
     ],
   },
   {

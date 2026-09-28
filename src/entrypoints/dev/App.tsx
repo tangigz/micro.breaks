@@ -2,7 +2,7 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { DEV_PRESENCE_KEY, type DevCommand, type PresenceMode } from '@/lib/dev';
 import { SETUP_KEY } from '@/lib/setup';
 import { db, type StoredEvent } from '@/data/db';
-import { clock } from '@/engine';
+import { clock, timerAwayMs } from '@/engine';
 import { currentDevClock } from '@/lib/clock';
 import { duration, mmss } from '@/lib/format';
 import { useEngine } from '@/ui/useEngine';
@@ -130,7 +130,11 @@ export function App() {
               : '–'}
           </dd>
           <dt>Break timer</dt>
-          <dd className="text-ink">{state.breakTimer ? mmss(state.breakTimer.endsAt - now) : '–'}</dd>
+          <dd className="text-ink">
+            {state.breakTimer
+              ? `${mmss(state.breakTimer.lengthMin * 60_000 - timerAwayMs(state, now))} left · ${state.away ? 'counting' : 'waiting'}`
+              : '–'}
+          </dd>
           <dt>Today</dt>
           <dd className="text-ink">
             {v.breaksToday} of {v.goal} breaks · {v.movedMinToday} min moving

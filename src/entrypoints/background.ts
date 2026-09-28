@@ -6,7 +6,7 @@
 import type { IdleState } from '@/engine';
 import { runDevCommand, simulatedIdle } from '@/background/dev';
 import { kindOf, notificationsAllowed, TEST_NOTIFICATION } from '@/background/notifications';
-import { dispatch, WAKE_ALARM } from '@/background/run';
+import { currentDetectionMs, dispatch, restoreDetection, WAKE_ALARM } from '@/background/run';
 import { ensureHomeTab, openHomeTab, openSetupTab } from '@/background/tabs';
 import { DEV_TOOLS } from '@/lib/clock';
 import type { DevMessage } from '@/lib/dev';
@@ -14,11 +14,10 @@ import { HEALTH_KEY, type ActionMessage, type Health } from '@/lib/messages';
 import { readSetup } from '@/lib/setup';
 
 const TICK_ALARM = 'tick';
-/** System-wide input; "idle" fires at exactly the 5-min break threshold. */
-const IDLE_DETECTION_SECONDS = 300;
 
 export default defineBackground(() => {
-  browser.idle.setDetectionInterval(IDLE_DETECTION_SECONDS);
+  // System-wide input: "idle" after 5 min without input, or 15 s while the break timer runs.
+  void restoreDetection();
 
   browser.runtime.onInstalled.addListener(async ({ reason }) => {
     await ensureAlarms();
@@ -42,7 +41,7 @@ export default defineBackground(() => {
   browser.idle.onStateChanged.addListener(async (idle) => {
     // While the dev panel simulates the person, real idle changes don't apply.
     if (DEV_TOOLS && (await simulatedIdle())) return;
-    void dispatch({ type: 'idle', idle: idle as IdleState });
+    void dispatch({ type: 'idle', idle: idle as IdleState, idleMs: currentDetectionMs() });
   });
 
   browser.runtime.onMessage.addListener((msg: ActionMessage | DevMessage, _sender, sendResponse) => {
@@ -79,10 +78,11 @@ async function ensureAlarms() {
 }
 
 async function tick() {
+  const idleMs = currentDetectionMs();
   const idle =
     (DEV_TOOLS ? await simulatedIdle() : null) ??
-    ((await browser.idle.queryState(IDLE_DETECTION_SECONDS)) as IdleState);
-  await dispatch({ type: 'tick', idle });
+    ((await browser.idle.queryState(idleMs / 1000)) as IdleState);
+  await dispatch({ type: 'tick', idle, idleMs });
   const health: Health = { notifications: (await notificationsAllowed()) ? 'granted' : 'denied' };
   await browser.storage.local.set({ [HEALTH_KEY]: health });
 }

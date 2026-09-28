@@ -11,21 +11,38 @@ test('the break timer shows the activity, a countdown and the length switch', as
   await prompt.keyboard.press('Enter');
   await expect(prompt.getByRole('heading', { name: 'Get some water' })).toBeVisible();
   await expect(prompt.getByText('Refill your water, look out of a window on the way.')).toBeVisible();
-  await expect(prompt.getByRole('timer')).toHaveText(/^[45]:\d\d$/);
-  await expect(prompt.getByText('Leave the computer.')).toBeVisible();
+  // Waiting for you to leave: the full time, standing still.
+  await expect(prompt.getByRole('timer')).toHaveText('5:00');
+  await expect(prompt.getByText('to start the timer.')).toBeVisible();
   await prompt.getByRole('button', { name: '10 min' }).click();
   await expect(prompt.getByRole('button', { name: '10 min' })).toHaveAttribute('aria-pressed', 'true');
-  await expect(prompt.getByRole('timer')).toHaveText(/^(10:00|9:\d\d)$/);
+  await expect(prompt.getByRole('timer')).toHaveText('10:00');
 });
 
-test('coming back too early: "Still here?"', async ({ dev, promptTab }) => {
+test('the countdown runs while you are away, pauses when you are back, and adds up', async ({
+  dev,
+  promptTab,
+}) => {
   await dev({ cmd: 'forward', minutes: 60 });
   const prompt = await promptTab();
   await prompt.keyboard.press('Enter');
   await dev({ cmd: 'presence', mode: 'away' });
-  await dev({ cmd: 'forward', minutes: 1 });
+  await dev({ cmd: 'forward', minutes: 2 });
+  // The test clock runs in real time between commands: a few seconds more than 2 min away.
+  await expect(prompt.getByRole('timer')).toHaveText(/^(3:00|2:5\d)$/);
   await dev({ cmd: 'presence', mode: 'present' });
   await expect(prompt.getByText('Still here?')).toBeVisible();
+  await expect(prompt.getByText('The timer continues when you leave again.')).toBeVisible();
+  // Paused: the countdown stays where it stopped (about 3:00), however long you stay.
+  const paused = await prompt.getByRole('timer').textContent();
+  expect(paused).toMatch(/^(3:00|2:[45]\d)$/);
+  await dev({ cmd: 'forward', minutes: 5 });
+  await expect(prompt.getByRole('timer')).toHaveText(paused!);
+  await dev({ cmd: 'presence', mode: 'away' });
+  await dev({ cmd: 'forward', minutes: 3 });
+  await dev({ cmd: 'presence', mode: 'present' });
+  await expect(prompt.getByRole('heading', { name: 'Recharged.' })).toBeVisible();
+  await expect(prompt.getByText('+5 min')).toBeVisible();
 });
 
 test("I'm back before 5 min: nothing logged, the tab shows the overdue screen", async ({

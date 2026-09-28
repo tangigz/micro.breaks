@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { dailyGoal, DEFAULT_SETTINGS, initialState } from './settings';
-import { step } from './step';
+import { idleDetectionMs, step, timerAwayMs } from './step';
 import { parseLocal, sim } from './testing';
 import { MIN, clock } from './time';
 
@@ -195,17 +195,37 @@ describe('reminders and episodes', () => {
   });
 });
 
-describe('break timer', () => {
+describe('break timer: counts time away from the computer', () => {
   const onTimer = () => sim(at('9:00')).work().until('10:00').act({ type: 'chooseBreak', intent: 'energy' });
 
-  it('validated after 5 min away; logged on return with the real away time', () => {
+  it('asks for a 15 s idle window while it runs, 5 min otherwise', () => {
+    const s = onTimer();
+    expect(idleDetectionMs(s.state)).toBe(15_000);
+    s.act({ type: 'cancelBreak' });
+    expect(idleDetectionMs(s.state)).toBe(5 * MIN);
+  });
+
+  it('waits, full, while you are at the computer: it never ends there', () => {
+    const s = onTimer().until('10:30');
+    expect(timerAwayMs(s.state, s.now)).toBe(0);
+    expect(s.state.breakTimer).toMatchObject({ ended: false, awayMs: 0 });
+    expect(s.notifications('breakDone')).toHaveLength(0);
+    expect(s.events('break_logged')).toHaveLength(0);
+  });
+
+  it('starts counting from your last input, 15 s after it', () => {
+    const s = onTimer().until('10:02').leave().until('10:03');
+    expect(timerAwayMs(s.state, s.now)).toBe(1 * MIN);
+  });
+
+  it('5 min away: the break counts, logged on return with the time away', () => {
     const s = onTimer().leave().until('10:08').back();
     expect(s.state.pendingRecharge).toEqual({ source: 'timer', minutes: 8, breakNumber: 1 });
     expect(s.state.breakTimer).toBeNull();
     expect(s.state.episode).toMatchObject({ status: 'succeeded' });
   });
 
-  it('timer ends while away: "Break done" notification', () => {
+  it('the countdown reaches zero while away: "Break done" notification', () => {
     const s = onTimer().leave().until('10:07');
     expect(s.notifications('breakDone').map((n) => [clock(n.at), n.effect.data.minutes])).toEqual([
       ['10:05', 5],
@@ -213,50 +233,57 @@ describe('break timer', () => {
     expect(s.state.breakTimer?.ended).toBe(true);
   });
 
-  it('leaving right after the click: the break counts with the timer', () => {
-    const s = onTimer().leave().until('10:12').back();
-    expect(s.state.pendingRecharge).toMatchObject({ source: 'timer', minutes: 12 });
+  it('back early pauses the countdown; absences add up (3 + 3 min)', () => {
+    const s = onTimer().leave().until('10:03').back();
+    expect(s.state.breakTimer).toMatchObject({ awayMs: 3 * MIN });
+    expect(s.state.pendingRecharge).toBeNull();
+    s.until('10:10');
+    expect(timerAwayMs(s.state, s.now)).toBe(3 * MIN);
+    s.leave().until('10:13');
+    expect(times(s.notifications('breakDone'))).toEqual(['10:12']);
+    s.back();
+    expect(s.state.pendingRecharge).toEqual({ source: 'timer', minutes: 6, breakNumber: 1 });
+    const logged = s.events('break_logged')[0]!.effect as { event: { payload: Record<string, number> } };
+    expect([clock(logged.event.payload.start!), clock(logged.event.payload.end!)]).toEqual([
+      '10:00',
+      '10:13',
+    ]);
   });
 
-  it('coming back early shows "Still here?" and the timer keeps running', () => {
-    const s = onTimer().act({ type: 'setBreakLength', lengthMin: 10 }).leave().until('10:02');
-    s.act({ type: 'activity' });
-    expect(s.state.breakTimer).toMatchObject({ early: true });
-    s.leave().until('10:08');
-    expect(s.state.breakTimer).toMatchObject({ early: false });
-    s.until('10:13').back();
-    expect(s.state.pendingRecharge).toMatchObject({ source: 'timer', minutes: 11 });
+  it('with 10 min, the break still counts from 5 min away', () => {
+    const s = onTimer().act({ type: 'setBreakLength', lengthMin: 10 }).leave().until('10:07');
+    expect(s.notifications('breakDone')).toHaveLength(0);
+    s.back();
+    expect(s.state.pendingRecharge).toMatchObject({ source: 'timer', minutes: 7 });
   });
 
   it("I'm back before 5 min: nothing logged, back to the overdue screen", () => {
-    const s = onTimer().until('10:03').act({ type: 'imBack' });
+    const s = onTimer().leave().until('10:03').back().act({ type: 'imBack' });
     expect(s.events('break_logged')).toHaveLength(0);
     expect(s.state.breakTimer).toBeNull();
     expect(s.view().mode).toBe('overdue');
   });
 
-  it('cancel break: no break, the episode continues and remaining reminders fire', () => {
+  it('cancel break: no break, the episode continues and reminders fire', () => {
     const s = onTimer().until('10:03').act({ type: 'cancelBreak' }).until('10:16');
     expect(s.events('break_logged')).toHaveLength(0);
     expect(times(s.notifications('reminder'))).toEqual(['10:05', '10:10', '10:15']);
   });
 
-  it('reminders due while the timer runs are dropped; later ones still fire', () => {
-    const s = onTimer().act({ type: 'setBreakLength', lengthMin: 10 }).until('10:16');
-    expect(times(s.notifications('reminder'))).toEqual(['10:15']);
+  it('reminders still fire while the timer waits for you to leave', () => {
+    const s = onTimer().until('10:16');
+    expect(times(s.notifications('reminder'))).toEqual(['10:05', '10:10', '10:15']);
   });
 
-  it('timer ends while still at the computer: closes a minute later, nothing logged', () => {
-    const s = onTimer().until('10:05');
-    expect(s.state.breakTimer).not.toBeNull();
-    s.until('10:06');
-    expect(s.state.breakTimer).toBeNull();
-    expect(s.events('break_timer_ended')).toHaveLength(1);
+  it('reminders due while you are away are dropped', () => {
+    const s = onTimer().until('10:04').leave().until('10:12').back();
+    expect(s.notifications('reminder')).toHaveLength(0);
+    expect(s.events('break_logged')).toHaveLength(1);
   });
 
   it('the length picked becomes the default', () => {
     const s = onTimer().act({ type: 'setBreakLength', lengthMin: 10 });
-    expect(s.state.breakTimer).toMatchObject({ lengthMin: 10, endsAt: s.t('10:10') });
+    expect(s.state.breakTimer).toMatchObject({ lengthMin: 10 });
     expect(s.state.settings.breakLengthMin).toBe(10);
   });
 });

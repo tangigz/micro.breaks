@@ -21,17 +21,24 @@ import type {
 
 /** chrome.idle reports "idle" after this long without input (detection interval 300 s). */
 export const IDLE_DETECTION = 5 * MIN;
+/** During the break timer, the shortest window chrome.idle allows: the countdown follows you. */
+export const TIMER_IDLE_DETECTION = 15_000;
 /** Alarms tick every minute; a longer silence while Chrome is open means the computer slept. */
 export const SLEEP_GAP = 6 * MIN;
 /** "Did you step away?" with no answer after this long counts as seated. */
 export const GAP_ANSWER_WINDOW = 5 * MIN;
-/** Activity right after "Start my break" is the click itself, not coming back early. */
-export const EARLY_GRACE = 30_000;
-/**
- * chrome.idle reports "idle" exactly 5 min after the last input, the same moment a
- * 5-min timer ends; wait this long before deciding the person never left.
- */
-export const TIMER_END_GRACE = MIN;
+
+/** The idle detection window the background should ask chrome.idle for. */
+export function idleDetectionMs(st: EngineState): number {
+  return st.breakTimer ? TIMER_IDLE_DETECTION : IDLE_DETECTION;
+}
+
+/** Time away counted by the break timer so far, the current absence included. */
+export function timerAwayMs(st: EngineState, now: number): number {
+  const bt = st.breakTimer;
+  if (!bt) return 0;
+  return bt.awayMs + (st.away ? Math.max(0, now - Math.max(st.away.since, bt.startedAt)) : 0);
+}
 
 interface Run {
   st: EngineState;
@@ -49,7 +56,7 @@ export function step(prev: EngineState, input: Input, now: number): StepResult {
     r.st.away = { since: r.st.lastSeenAt, locked: true };
   }
 
-  if (input.type === 'tick' || input.type === 'idle') observeIdle(r, input.idle);
+  if (input.type === 'tick' || input.type === 'idle') observeIdle(r, input.idle, input.idleMs);
   if (input.type === 'action') {
     observeIdle(r, 'active');
     onAction(r, input.action);
@@ -164,7 +171,7 @@ function onStartup(r: Run) {
   log(r, 'chrome_gap', { from: st.lastSeenAt, minutes });
 }
 
-function observeIdle(r: Run, idle: IdleState) {
+function observeIdle(r: Run, idle: IdleState, idleMs = IDLE_DETECTION) {
   const { st, now } = r;
   if (idle === 'active') {
     if (st.away) returnFromAway(r);
@@ -172,9 +179,10 @@ function observeIdle(r: Run, idle: IdleState) {
     return;
   }
   if (!st.away) {
-    const since = idle === 'idle' ? now - IDLE_DETECTION : now;
+    const since = idle === 'idle' ? now - idleMs : now;
     st.away = { since: Math.max(since, st.startedAt ?? since), locked: idle === 'locked' };
-    if (st.breakTimer) st.breakTimer.early = false;
+    const bt = st.breakTimer;
+    if (bt) bt.leftAt ??= Math.max(st.away.since, bt.startedAt);
     log(r, idle);
   } else if (idle === 'locked') {
     st.away.locked = true;
@@ -187,6 +195,15 @@ function returnFromAway(r: Run) {
   st.away = null;
   log(r, 'active', { awayMin: Math.floor((now - since) / MIN) });
   if (st.dayStartedAt == null) return;
+  const bt = st.breakTimer;
+  if (bt) {
+    // The timer adds up absences: 3 min + 2 min is a 5-min break.
+    bt.awayMs += trackedOverlap(Math.max(since, bt.startedAt), now, st.settings);
+    if (bt.awayMs >= st.settings.minBreakMin * MIN) {
+      logBreak(r, bt.leftAt ?? since, now, Math.round(bt.awayMs / MIN));
+    }
+    return;
+  }
   // Only the part inside today's working hours, outside lunch, counts.
   const tracked = trackedOverlap(since, now, st.settings);
   if (tracked >= st.settings.minBreakMin * MIN) logBreak(r, since, now, Math.round(tracked / MIN));
@@ -202,10 +219,10 @@ function onAction(r: Run, a: Action) {
       const len = st.settings.breakLengthMin;
       st.breakTimer = {
         startedAt: now,
-        endsAt: now + len * MIN,
         intent: a.intent,
         lengthMin: len,
-        early: false,
+        awayMs: 0,
+        leftAt: null,
         ended: false,
       };
       const episodeId = st.episode?.status === 'open' ? st.episode.id : null;
@@ -229,15 +246,9 @@ function onAction(r: Run, a: Action) {
       st.settings.breakLengthMin = a.lengthMin;
       if (st.breakTimer) {
         st.breakTimer.lengthMin = a.lengthMin;
-        st.breakTimer.endsAt = now + a.lengthMin * MIN;
-        st.breakTimer.ended = false;
+        st.breakTimer.ended = timerAwayMs(st, now) >= a.lengthMin * MIN;
       }
       log(r, 'setting_changed', { breakLengthMin: a.lengthMin });
-      return;
-    case 'activity':
-      if (st.breakTimer && !st.breakTimer.ended && now - st.breakTimer.startedAt >= EARLY_GRACE) {
-        st.breakTimer.early = true;
-      }
       return;
     case 'imBack':
     case 'cancelBreak':
@@ -315,19 +326,15 @@ function advance(r: Run) {
   if (phaseAt(now, s) !== 'work' || st.seatedSince == null) return;
   if (st.pendingGap) return; // "Did you step away?" takes the hero spot until answered
 
+  // The countdown only runs while away, so it can only end while away.
   const bt = st.breakTimer;
-  if (bt && !bt.ended && now >= bt.endsAt) {
-    if (st.away) {
-      bt.ended = true;
-      notify(r, 'breakDone', { minutes: Math.floor((now - st.away.since) / MIN) });
-    } else if (now >= bt.endsAt + TIMER_END_GRACE) {
-      st.breakTimer = null;
-      log(r, 'break_timer_ended', { reason: 'time' });
-    }
+  if (bt && !bt.ended && st.away && timerAwayMs(st, now) >= bt.lengthMin * MIN) {
+    bt.ended = true;
+    notify(r, 'breakDone', { minutes: Math.floor(timerAwayMs(st, now) / MIN) });
   }
 
-  // Away or on the break timer: nothing interrupts.
-  const quiet = st.away != null || st.breakTimer != null;
+  // Away: nothing interrupts. A timer waiting for the person to leave does not silence reminders.
+  const quiet = st.away != null;
   const due = st.seatedSince + s.intervalMin * MIN;
   const ep = st.episode;
 
@@ -380,8 +387,9 @@ function nextWake(st: EngineState, now: number): number | null {
     const d = dayTimes(now, s);
     c.push(d.start, d.lunchStart, d.lunchEnd, d.end);
     if (st.pendingGap) c.push(st.pendingGap.askedAt + GAP_ANSWER_WINDOW);
-    if (st.breakTimer && !st.breakTimer.ended)
-      c.push(st.breakTimer.endsAt, st.breakTimer.endsAt + TIMER_END_GRACE);
+    if (st.breakTimer && !st.breakTimer.ended && st.away) {
+      c.push(now + st.breakTimer.lengthMin * MIN - timerAwayMs(st, now));
+    }
     if (st.seatedSince != null) {
       const due = st.seatedSince + s.intervalMin * MIN;
       c.push(due - s.headsUpMin * MIN, due);

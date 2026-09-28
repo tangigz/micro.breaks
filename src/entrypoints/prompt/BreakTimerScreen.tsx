@@ -7,11 +7,11 @@ import { AlertCircleIcon, MonitorIcon } from '@/ui/icons';
 export interface BreakTimerScreenProps {
   intent: IntentInfo;
   activity: Activity;
-  /** Time on the timer so far, and its length. */
-  elapsedMs: number;
+  /** Time away counted so far (the countdown only runs while away), and the length. */
+  awayMs: number;
   lengthMin: number;
-  /** Activity seen before the break counted. */
-  early: boolean;
+  /** Away right now: the countdown is running. */
+  away: boolean;
   theme: Theme;
   onLength: (min: number) => void;
   onBack: () => void;
@@ -26,7 +26,9 @@ const C = 2 * Math.PI * R;
 /** Design frame "3 · Break timer": the M1 break, a timer and one simple idea. */
 export function BreakTimerScreen(p: BreakTimerScreenProps) {
   const total = p.lengthMin * MIN;
-  const elapsed = Math.min(total, Math.max(0, p.elapsedMs));
+  const elapsed = Math.min(total, Math.max(0, p.awayMs));
+  // Waiting for you to leave, counting down while you're away, or paused because you came back.
+  const phase = p.away ? 'running' : elapsed > 0 ? 'paused' : 'waiting';
   const left = total - elapsed;
   // The mark where the break starts to count (5 min), on a ring that starts at 12 o'clock.
   const a = (Math.min(5 * MIN, total) / total) * 2 * Math.PI;
@@ -104,23 +106,29 @@ export function BreakTimerScreen(p: BreakTimerScreenProps) {
             {mmss(left)}
           </div>
 
-          {p.early ? (
+          {phase === 'paused' ? (
             <div
               role="status"
               className="bg-att-bg text-ink text-body flex min-h-12 items-center gap-3 self-start rounded-full px-5 py-3"
             >
               <AlertCircleIcon className="text-att shrink-0" />
               <span>
-                <b className="font-semibold">Still here?</b> The break counts once you've been away 5 min.
+                <b className="font-semibold">Still here?</b> The timer continues when you leave again.
               </span>
             </div>
           ) : (
             <div className="text-body text-ink-2 flex items-center gap-3">
               <MonitorIcon className="text-pos shrink-0" />
-              <span>
-                <b className="text-ink font-semibold">Leave the computer.</b> The break counts after 5 min
-                away.
-              </span>
+              {phase === 'waiting' ? (
+                <span>
+                  <b className="text-ink font-semibold">Leave the computer</b> to start the timer.
+                </span>
+              ) : (
+                <span>
+                  <b className="text-ink font-semibold">Leave the computer.</b> The break counts after 5 min
+                  away.
+                </span>
+              )}
             </div>
           )}
 

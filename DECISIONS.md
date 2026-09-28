@@ -4,7 +4,8 @@ Newest first. Each entry is reflected in `docs/spec.html`.
 
 ## 2026-09-28 · Break timer and "Recharged."
 
-- **"Still here?"**: while the timer runs, the break tab asks Chrome every 2 s whether there was input in the last 15 s (the shortest window chrome.idle allows). In dev builds, the dev panel's simulated person answers instead.
+- **The break timer counts time away from the computer, not clock time** (your review). It waits at the full length until you leave ("Leave the computer to start the timer."), counts down from ~15 s after your last input, **pauses** when you come back ("Still here? The timer continues when you leave again.") and **resumes** when you leave again: absences add up (3 + 3 min). The break counts once they add up to 5 min; a countdown can't end while you're at the computer. While the timer runs, chrome.idle's window is 15 s instead of 5 min (the engine says which; the background applies it). A timer waiting for you no longer silences reminders. Unprompted breaks still need 5 min in a row. Spec updated.
+- **Test mode banner** (dev builds): while the dev panel's fake clock or simulated person is on, your real computer is ignored; every screen now says so, with **Back to real time**. (Your laptop-closed test was ignored because of it.)
 - **I'm back before 5 min, and Cancel break, turn the tab into the main screen** (overdue), as the spec's "you return to the overdue screen".
 - **"Recharged." on the main screen** (unprompted break, "Yes, I moved") plays when the tab is visible, then returns to the normal screen after 8 s, or at once with Back to work. If a break tab was also showing it, that tab closes itself.
 - **"Recharged." plays the first time its tab is in front of you** (visible and focused), not when the break is logged: you may come back to another tab or another app (your review: the animation had already played, unseen). The main screen's 8 s return also counts from then.

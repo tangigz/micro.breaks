@@ -1,12 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { activityFor, INTENTS } from '@/content/breaks';
-import { MIN, type Intent } from '@/engine';
+import { timerAwayMs, type Intent } from '@/engine';
 import { sendAction } from '@/lib/messages';
 import { useTheme } from '@/ui/theme';
 import { useEngine } from '@/ui/useEngine';
 import { PromptScreen } from './PromptScreen';
 import { RechargedScreen } from '@/ui/RechargedScreen';
-import { useActivityWatch } from '@/ui/useActivityWatch';
 import { BreakTimerScreen } from './BreakTimerScreen';
 
 /** The prompt tab: the prompt, then the break timer and "Recharged." in the same tab. */
@@ -43,8 +42,6 @@ export function App() {
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, []);
-
-  useActivityWatch(state?.breakTimer ?? null);
 
   // "Recharged." seen elsewhere (the main screen): this tab has nothing left to say.
   const showedRecharge = useRef(false);
@@ -84,9 +81,9 @@ export function App() {
       <BreakTimerScreen
         intent={info}
         activity={activityFor(bt.intent, state.place)}
-        elapsedMs={bt.ended ? bt.lengthMin * MIN : bt.lengthMin * MIN - (bt.endsAt - now)}
+        awayMs={timerAwayMs(state, now)}
         lengthMin={bt.lengthMin}
-        early={bt.early}
+        away={state.away != null}
         theme={theme}
         onLength={(m) => sendAction({ type: 'setBreakLength', lengthMin: m })}
         onBack={async () => {

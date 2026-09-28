@@ -3,7 +3,7 @@
  * way the background will (1-min ticks, alarms at wakeAt, chrome.idle events).
  */
 import { initialState } from './settings';
-import { IDLE_DETECTION, step } from './step';
+import { idleDetectionMs, step } from './step';
 import { MIN, atMinute } from './time';
 import type { Action, Effect, EngineState, IdleState, Input, NotificationKind, Settings } from './types';
 import { view } from './view';
@@ -39,8 +39,9 @@ export function sim(start: string, settings?: Partial<Settings>) {
     wakeAt = res.wakeAt;
     for (const effect of res.effects) log.push({ at: now, effect });
   };
-  const idleNow = (): IdleState =>
-    locked ? 'locked' : now - lastInputAt >= IDLE_DETECTION ? 'idle' : 'active';
+  // Like chrome.idle: the window is 5 min, or 15 s while a break timer runs.
+  const window_ = () => idleDetectionMs(state);
+  const idleNow = (): IdleState => (locked ? 'locked' : now - lastInputAt >= window_() ? 'idle' : 'active');
   const input = () => {
     lastInputAt = now;
     if (chromeOpen && reported !== 'active' && !locked) {
@@ -81,16 +82,16 @@ export function sim(start: string, settings?: Partial<Settings>) {
       while (now < end) {
         const c = [Math.floor(now / MIN) * MIN + MIN, end];
         if (chromeOpen && wakeAt != null) c.push(wakeAt);
-        if (chromeOpen && !working && !locked && reported === 'active') c.push(lastInputAt + IDLE_DETECTION);
+        if (chromeOpen && !working && !locked && reported === 'active') c.push(lastInputAt + window_());
         now = Math.min(...c.filter((x) => x > now));
         if (working) input();
         if (!chromeOpen) continue;
         const idle = idleNow();
         if (idle !== reported) {
           reported = idle;
-          feed({ type: 'idle', idle });
+          feed({ type: 'idle', idle, idleMs: window_() });
         }
-        if (now % MIN === 0 || now === wakeAt) feed({ type: 'tick', idle });
+        if (now % MIN === 0 || now === wakeAt) feed({ type: 'tick', idle, idleMs: window_() });
       }
       return api;
     },
