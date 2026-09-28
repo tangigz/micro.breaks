@@ -35,7 +35,7 @@ src/
 
 - `npm run dev`: opens Chrome for Testing (Playwright's) with the extension, profile in `.dev-profile/`, hot reload. Chrome 137+ can't auto-load extensions, hence Chrome for Testing.
 - `npm run check`: typecheck, lint, format check, unit tests, build
-- `npm run e2e`: builds the dev extension and runs Playwright tests in Chrome for Testing (`tests/e2e/`), driving the dev clock
+- `npm run e2e`: builds a dev extension into `.output/chrome-mv3-e2e` (never the folder `npm run dev` uses) and runs Playwright tests in Chrome for Testing (`tests/e2e/`), driving the dev clock
 - Dev builds have a dev panel (`dev.html`): fake clock, simulated presence, fast-forward. It never ships in production builds. See `docs/TESTING.md`.
 
 ## Workflow

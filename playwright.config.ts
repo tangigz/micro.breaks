@@ -1,6 +1,6 @@
 import { defineConfig } from '@playwright/test';
 
-// End-to-end tests run the dev build (.output/chrome-mv3-dev, with the dev clock)
+// End-to-end tests run a dev build (.output/chrome-mv3-e2e, with the dev clock)
 // in Chrome for Testing. `npm run e2e` builds it first.
 export default defineConfig({
   testDir: 'tests/e2e',

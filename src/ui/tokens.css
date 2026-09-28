@@ -34,6 +34,8 @@
   --glow-min: 0.18;
   --glow-max: 0.42;
   --glow-idle: 0.1;
+  /* Warm glow, top right of the break prompt (spec › Prompt glow). */
+  --prompt-glow: 255 160 90;
 
   color-scheme: dark;
 }
@@ -91,7 +93,8 @@
   --text-hero--letter-spacing: -0.05em;
   --text-headline: 104px;
   --text-headline--line-height: 100px;
-  --text-headline--letter-spacing: -0.045em;
+  /* -0.045em in the design, tuned for another font: SF Pro needs more air ("Ti" touched). */
+  --text-headline--letter-spacing: -0.03em;
   --text-display: 44px;
   --text-display--line-height: 48px;
   --text-display--letter-spacing: -0.02em;

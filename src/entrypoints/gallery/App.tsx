@@ -1,9 +1,10 @@
 import type { ReactNode } from 'react';
-import { DEFAULT_SETTINGS, type LogEvent, type Theme } from '@/engine';
+import { DEFAULT_SETTINGS, type Intent, type LogEvent, type Place, type Theme } from '@/engine';
 import { dayStats } from '@/data/stats';
 import { sim } from '@/engine/testing';
 import { chipLabel, mainContent, type MainContext } from '@/entrypoints/newtab/content';
 import { MainScreen } from '@/entrypoints/newtab/MainScreen';
+import { PromptScreen } from '@/entrypoints/prompt/PromptScreen';
 import { draftFrom, type Draft, type Field } from '@/entrypoints/settings/sentence';
 import { SettingsScreen } from '@/entrypoints/settings/SettingsScreen';
 import { SetupScreen } from '@/entrypoints/setup/SetupScreen';
@@ -125,6 +126,25 @@ function setupShot(progress: SetupProgress, allowed: boolean) {
   return Shot;
 }
 
+function promptShot(place: Place, intent: Intent, seatedMin: number) {
+  const Shot = (theme: Theme) => (
+    <PromptScreen
+      frame
+      seatedMs={seatedMin * 60_000}
+      due={seatedMin >= 60}
+      place={place}
+      intent={intent}
+      theme={theme}
+      onPick={() => {}}
+      onStart={() => {}}
+      onLater={() => {}}
+      onSkip={() => {}}
+      onToggleTheme={() => {}}
+    />
+  );
+  return Shot;
+}
+
 function timerShot(editing: Field | null, change: Partial<Draft> = {}) {
   const Shot = (theme: Theme) => (
     <SettingsScreen
@@ -163,6 +183,17 @@ const groups: { title: string; shots: { name: string; render: (theme: Theme) => 
       { name: '1b · Movement timer', render: timerShot(null) },
       { name: '1c · Picking a time', render: timerShot('dayStart') },
       { name: 'Movement timer, impossible day', render: timerShot(null, { dayEnd: 8 * 60 }) },
+    ],
+  },
+  {
+    title: 'Break prompt',
+    shots: [
+      { name: '2 · Break prompt', render: promptShot('office', 'energy', 62) },
+      { name: 'Break prompt, working from home, Focus chosen', render: promptShot('home', 'focus', 64) },
+      {
+        name: 'Break prompt, opened early with Start a break now',
+        render: promptShot('office', 'energy', 42),
+      },
     ],
   },
   {
