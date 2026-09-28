@@ -2,6 +2,18 @@
 
 Newest first. Each entry is reflected in `docs/spec.html`.
 
+## 2026-09-28 · Break timer and "Recharged."
+
+- **The break timer counts time away from the computer, not clock time** (your review). It waits at the full length until you leave ("Leave the computer to start the timer."), counts down from ~15 s after your last input, **pauses** when you come back ("Still here? The timer continues when you leave again.") and **resumes** when you leave again: absences add up (3 + 3 min). The break counts once they add up to 5 min; a countdown can't end while you're at the computer. While the timer runs, chrome.idle's window is 15 s instead of 5 min (the engine says which; the background applies it). A timer waiting for you no longer silences reminders. Unprompted breaks still need 5 min in a row. Spec updated.
+- **Saved state from an older version is brought up to date on load** (your review: a timer saved before the change showed "NaN:NaN"). Missing fields get defaults; an old-format break timer restarts its count of time away at zero. The same can happen in the test week when the extension updates mid-break.
+- **Test mode banner** (dev builds): while the dev panel's fake clock or simulated person is on, your real computer is ignored; every screen now says so, with **Back to real time**. (Your laptop-closed test was ignored because of it.)
+- **I'm back before 5 min, and Cancel break, turn the tab into the main screen** (overdue), as the spec's "you return to the overdue screen".
+- **"Recharged." on the main screen** (unprompted break, "Yes, I moved") plays when the tab is visible, then returns to the normal screen after 8 s, or at once with Back to work. If a break tab was also showing it, that tab closes itself.
+- **"Recharged." plays the first time its tab is in front of you** (visible and focused), not when the break is logged: you may come back to another tab or another app (your review: the animation had already played, unseen). The main screen's 8 s return also counts from then.
+- **After a timed break, Back to work closes the break tab.**
+- **The ring's 5-min mark turns green at 5 min on the timer**; the break itself counts from 5 min away (engine).
+- **E2E tests run with reduced motion**, so they see final states (animation, count-up) at once; `npm run e2e:headed` plays them.
+
 ## 2026-09-27 · Break prompt
 
 - **The three breaks live in `src/content/breaks.json`** (the spec says `content/breaks.json`; inside `src/` so the build can import it). Each has a card illustration per intent (bolt, brain, chair) and an activity illustration for the break timer (bolt or footprints at home, droplet, raising hands).

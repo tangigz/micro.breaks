@@ -36,7 +36,7 @@ test('the timer chip opens the movement timer; Back leaves without saving', asyn
   await tab.getByRole('button', { name: 'Start of day, 9:00' }).click();
   await tab.getByRole('option', { name: '9:30' }).click();
   await expect(tab.getByRole('button', { name: 'Start of day, 9:30' })).toBeVisible();
-  await tab.getByRole('button', { name: 'Back' }).click();
+  await tab.getByRole('button', { name: 'Back', exact: true }).click();
   await expect(tab).toHaveURL(/\/newtab\.html$/);
   expect((await engine()).settings.dayStart).toBe(9 * 60);
 });

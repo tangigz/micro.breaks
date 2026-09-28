@@ -26,7 +26,7 @@ test('choose a break, leave 6 min, come back: "Recharged."', async ({ dev, engin
   const prompt = await promptTab();
   await prompt.keyboard.press('2');
   await prompt.keyboard.press('Enter');
-  await expect(prompt.getByText('Leave the computer.')).toBeVisible();
+  await expect(prompt.getByText('to start the timer.')).toBeVisible();
   expect((await engine()).breakTimer).toMatchObject({ intent: 'focus' });
 
   await dev({ cmd: 'presence', mode: 'away' });

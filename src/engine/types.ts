@@ -34,13 +34,18 @@ export interface Episode {
   failReason: FailReason | null;
 }
 
+/**
+ * The break timer counts time away from the computer, not time on the clock: it
+ * waits while the person is at the computer and adds up each absence.
+ */
 export interface BreakTimer {
   startedAt: number;
-  endsAt: number;
   intent: Intent;
   lengthMin: number;
-  /** Activity seen before the break counted: shows "Still here?". */
-  early: boolean;
+  /** Time away in absences that already ended (the current one is `away`). */
+  awayMs: number;
+  /** When the person first left during this timer (start of the logged break). */
+  leftAt: number | null;
   /** The countdown reached zero while the person was away. */
   ended: boolean;
 }
@@ -92,7 +97,6 @@ export type Action =
   | { type: 'remindLater' }
   | { type: 'skip' }
   | { type: 'setBreakLength'; lengthMin: number }
-  | { type: 'activity' }
   | { type: 'imBack' }
   | { type: 'cancelBreak' }
   | { type: 'gapAnswer'; moved: boolean }
@@ -101,10 +105,13 @@ export type Action =
   | { type: 'updateSettings'; settings: Partial<Settings> };
 
 export type Input =
-  /** Periodic alarm, with chrome.idle.queryState(300). */
-  | { type: 'tick'; idle: IdleState }
-  /** chrome.idle.onStateChanged. */
-  | { type: 'idle'; idle: IdleState }
+  /** Periodic alarm, with chrome.idle.queryState(detection window). */
+  | { type: 'tick'; idle: IdleState; idleMs?: number }
+  /**
+   * chrome.idle.onStateChanged. `idleMs` is the detection window in use: "idle"
+   * means no input for that long (5 min by default, 15 s during the break timer).
+   */
+  | { type: 'idle'; idle: IdleState; idleMs?: number }
   /** Chrome started (runtime.onStartup). */
   | { type: 'startup' }
   /** Something the person did on a micro.breaks screen or notification. */

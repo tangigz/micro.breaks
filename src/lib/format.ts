@@ -8,6 +8,7 @@ export function duration(minutes: number): string {
 
 /** "17:50" countdown or count-up from milliseconds. */
 export function mmss(ms: number): string {
-  const s = Math.max(0, Math.floor(ms / 1000));
+  // Never "NaN:NaN" on screen, whatever went wrong upstream.
+  const s = Number.isFinite(ms) ? Math.max(0, Math.floor(ms / 1000)) : 0;
   return `${Math.floor(s / 60)}:${pad(s % 60)}`;
 }

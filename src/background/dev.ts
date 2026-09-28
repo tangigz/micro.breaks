@@ -2,12 +2,12 @@
  * Dev tools (dev builds only): a fake clock and a simulated person, so a full
  * day can be tested in minutes by hand (dev panel) or by the e2e tests.
  * The simulated person reports idle like chrome.idle: "idle" 5 min after they
- * leave, "locked" at once.
+ * leave (15 s during the break timer), "locked" at once.
  */
-import { IDLE_DETECTION, MIN, type IdleState } from '@/engine';
+import { idleDetectionMs, MIN, type IdleState } from '@/engine';
 import { now, setDevClock, currentDevClock, initClock } from '@/lib/clock';
 import { DEV_PRESENCE_KEY, type DevCommand, type PresenceMode } from '@/lib/dev';
-import { dispatch, enqueue, resetState, runStep } from './run';
+import { dispatch, enqueue, loadState, resetState, runStep } from './run';
 
 interface Presence {
   mode: PresenceMode;
@@ -27,9 +27,9 @@ async function setPresence(p: Presence | null) {
   else await browser.storage.local.remove(DEV_PRESENCE_KEY);
 }
 
-function idleOf(p: Presence, t: number): IdleState {
+function idleOf(p: Presence, t: number, windowMs: number): IdleState {
   if (p.mode === 'locked') return 'locked';
-  if (p.mode === 'away' && t - p.since >= IDLE_DETECTION) return 'idle';
+  if (p.mode === 'away' && t - p.since >= windowMs) return 'idle';
   return 'active';
 }
 
@@ -37,19 +37,23 @@ function idleOf(p: Presence, t: number): IdleState {
 export async function simulatedIdle(): Promise<IdleState | null> {
   await initClock();
   const p = await getPresence();
-  return p ? idleOf(p, now()) : null;
+  return p ? idleOf(p, now(), idleDetectionMs(await loadState())) : null;
 }
 
 /** Sends the engine the simulated idle state if it changed, then a tick. */
 async function step() {
   const p = await getPresence();
   if (p) {
-    const idle = idleOf(p, now());
+    const windowMs = idleDetectionMs(await loadState());
+    const idle = idleOf(p, now(), windowMs);
+    // Steps land on minutes, not on the exact moment Chrome would report idle: tell
+    // the engine how long the simulated person has really been gone.
+    const idleMs = idle === 'idle' ? now() - p.since : windowMs;
     if (idle !== p.reported) {
       await setPresence({ ...p, reported: idle });
-      await runStep({ type: 'idle', idle });
+      await runStep({ type: 'idle', idle, idleMs });
     }
-    await runStep({ type: 'tick', idle });
+    await runStep({ type: 'tick', idle, idleMs });
   } else {
     await runStep({ type: 'tick', idle: 'active' });
   }

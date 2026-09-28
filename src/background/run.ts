@@ -3,7 +3,17 @@
  * can arrive together, and each step reads the state the previous one saved.
  * The service worker sleeps between events, so state lives in chrome.storage.
  */
-import { dayKey, initialState, step, type Effect, type EngineState, type Input } from '@/engine';
+import {
+  dayKey,
+  idleDetectionMs,
+  IDLE_DETECTION,
+  initialState,
+  normalizeState,
+  step,
+  type Effect,
+  type EngineState,
+  type Input,
+} from '@/engine';
 import { db } from '@/data/db';
 import { STATE_KEY } from '@/lib/messages';
 import { initClock, now } from '@/lib/clock';
@@ -11,6 +21,28 @@ import { clearNotifications, showNotification } from './notifications';
 import { closePromptTab, openPromptTab } from './tabs';
 
 export const WAKE_ALARM = 'wake';
+
+/**
+ * chrome.idle's current detection window: 5 min, or 15 s while the break timer runs
+ * (the engine decides). Every idle report tells the engine which window it used.
+ */
+let detectionMs = IDLE_DETECTION;
+
+export function currentDetectionMs(): number {
+  return detectionMs;
+}
+
+export async function applyDetection(st: EngineState, force = false) {
+  const want = idleDetectionMs(st);
+  if (want === detectionMs && !force) return;
+  detectionMs = want;
+  browser.idle.setDetectionInterval(want / 1000);
+}
+
+/** On service worker start: Chrome forgets the window, set it from the saved state. */
+export async function restoreDetection() {
+  await applyDetection(await loadState(), true);
+}
 
 let chain: Promise<void> = Promise.resolve();
 
@@ -32,9 +64,7 @@ export async function resetState(): Promise<void> {
 
 export async function loadState(): Promise<EngineState> {
   const got = await browser.storage.local.get(STATE_KEY);
-  const st = got[STATE_KEY] as EngineState | undefined;
-  if (!st || st.version !== 1) return initialState(st?.settings);
-  return st;
+  return normalizeState(got[STATE_KEY]);
 }
 
 export async function runStep(input: Input) {
@@ -42,6 +72,7 @@ export async function runStep(input: Input) {
   const t = now();
   const res = step(await loadState(), input, t);
   await browser.storage.local.set({ [STATE_KEY]: res.state });
+  await applyDetection(res.state);
   for (const effect of res.effects) await runEffect(effect);
   if (res.wakeAt != null) await browser.alarms.create(WAKE_ALARM, { when: res.wakeAt });
 }

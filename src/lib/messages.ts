@@ -1,5 +1,5 @@
 import type { Action, EngineState } from '@/engine';
-import { initialState } from '@/engine';
+import { normalizeState } from '@/engine';
 
 /** chrome.storage.local keys shared by the background and the screens. */
 export const STATE_KEY = 'engine';
@@ -22,12 +22,12 @@ export async function sendAction(action: Action): Promise<void> {
 
 export async function readState(): Promise<EngineState> {
   const got = await browser.storage.local.get(STATE_KEY);
-  return (got[STATE_KEY] as EngineState | undefined) ?? initialState();
+  return normalizeState(got[STATE_KEY]);
 }
 
 export function onStateChange(cb: (st: EngineState) => void): () => void {
   const listener = (changes: Record<string, { newValue?: unknown }>, area: string) => {
-    if (area === 'local' && changes[STATE_KEY]?.newValue) cb(changes[STATE_KEY].newValue as EngineState);
+    if (area === 'local' && changes[STATE_KEY]?.newValue) cb(normalizeState(changes[STATE_KEY].newValue));
   };
   browser.storage.onChanged.addListener(listener);
   return () => browser.storage.onChanged.removeListener(listener);

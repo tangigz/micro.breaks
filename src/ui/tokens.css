@@ -161,6 +161,20 @@ body {
   animation: mb-rise 3.4s cubic-bezier(0.2, 0.8, 0.2, 1) infinite;
 }
 
+/* Break timer: the activity illustration floats (spec › Motion). */
+@keyframes mb-float {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-3deg);
+  }
+  50% {
+    transform: translateY(-16px) rotate(3deg);
+  }
+}
+.mb-float {
+  animation: mb-float 2.4s ease-in-out infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
