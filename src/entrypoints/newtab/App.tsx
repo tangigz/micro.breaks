@@ -3,7 +3,7 @@ import { DEV_TOOLS } from '@/lib/clock';
 import { sendAction } from '@/lib/messages';
 import { RechargedScreen } from '@/ui/RechargedScreen';
 import { useTheme } from '@/ui/theme';
-import { usePageVisible } from '@/ui/usePageVisible';
+import { useInFront, usePageVisible } from '@/ui/usePageVisible';
 import { useDaySummaries } from '@/ui/useDaySummaries';
 import { useEngine } from '@/ui/useEngine';
 import { useHealth } from '@/ui/useHealth';
@@ -20,13 +20,14 @@ export function App() {
   useTheme(state?.settings.theme);
 
   const visible = usePageVisible();
+  const inFront = useInFront();
   const recharge = state?.pendingRecharge ?? null;
   // "Recharged." plays once the next time you look at this tab, then the normal screen.
   useEffect(() => {
-    if (!recharge || !visible) return;
+    if (!recharge || !inFront) return;
     const t = setTimeout(() => void sendAction({ type: 'rechargeSeen' }), RECHARGE_SHOWN_MS);
     return () => clearTimeout(t);
-  }, [recharge, visible]);
+  }, [recharge, inFront]);
 
   if (!state || !view) return null;
   const theme = state.settings.theme;

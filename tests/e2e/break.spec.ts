@@ -79,3 +79,26 @@ test('"Yes, I moved" plays "Recharged." right there', async ({ dev, openPage }) 
   await expect(tab.getByText('Chrome was closed · You moved')).toBeVisible();
   await expect(tab.getByText('+40 min')).toBeVisible();
 });
+
+test('"Recharged." waits until its tab is in front, then plays', async ({ context, dev, promptTab }) => {
+  // Headless Chrome counts every tab as focused: let the test say when the break tab is in front.
+  await context.addInitScript(() => {
+    const w = window as unknown as { mbFront: boolean };
+    w.mbFront = false;
+    document.hasFocus = () => w.mbFront;
+  });
+  await dev({ cmd: 'forward', minutes: 60 });
+  const prompt = await promptTab();
+  await prompt.keyboard.press('Enter');
+  await dev({ cmd: 'presence', mode: 'away' });
+  await dev({ cmd: 'forward', minutes: 6 });
+  await dev({ cmd: 'presence', mode: 'present' });
+  await expect(prompt.getByRole('heading', { name: 'Recharged.' })).toBeAttached();
+  await expect(prompt.locator('.rc-play')).toHaveCount(0);
+
+  await prompt.evaluate(() => {
+    (window as unknown as { mbFront: boolean }).mbFront = true;
+    window.dispatchEvent(new Event('focus'));
+  });
+  await expect(prompt.locator('.rc-play')).toHaveCount(1);
+});

@@ -4,6 +4,7 @@ import type { Recharge, Theme } from '@/engine';
 import { Header, ThemeToggle } from './Header';
 import { ArrowRightIcon } from './icons';
 import { rechargedCopy } from './rechargedCopy';
+import { useSeen } from './useSeen';
 import './recharged.css';
 
 export interface RechargedScreenProps {
@@ -48,8 +49,17 @@ function useCountUp(target: number, play: boolean): number {
 
 const delay = (s: number) => ({ '--delay': `${s}s` }) as CSSProperties;
 
-/** Design frame "4 · Break done" and its variants (unprompted break, "Yes, I moved"). */
+/**
+ * Design frame "4 · Break done" and its variants (unprompted break, "Yes, I moved").
+ * The animation plays the first time the tab is in front of the person.
+ */
 export function RechargedScreen(p: RechargedScreenProps) {
+  const seen = useSeen();
+  // Remount once seen, so the animation and the count-up start from the beginning.
+  return <Recharged key={String(seen)} {...p} play={(p.play ?? true) && seen} />;
+}
+
+function Recharged(p: RechargedScreenProps) {
   const play = p.play ?? true;
   const copy = rechargedCopy(p.recharge, p.goal);
   const count = useCountUp(p.recharge.minutes, play);

@@ -7,6 +7,7 @@ Newest first. Each entry is reflected in `docs/spec.html`.
 - **"Still here?"**: while the timer runs, the break tab asks Chrome every 2 s whether there was input in the last 15 s (the shortest window chrome.idle allows). In dev builds, the dev panel's simulated person answers instead.
 - **I'm back before 5 min, and Cancel break, turn the tab into the main screen** (overdue), as the spec's "you return to the overdue screen".
 - **"Recharged." on the main screen** (unprompted break, "Yes, I moved") plays when the tab is visible, then returns to the normal screen after 8 s, or at once with Back to work. If a break tab was also showing it, that tab closes itself.
+- **"Recharged." plays the first time its tab is in front of you** (visible and focused), not when the break is logged: you may come back to another tab or another app (your review: the animation had already played, unseen). The main screen's 8 s return also counts from then.
 - **After a timed break, Back to work closes the break tab.**
 - **The ring's 5-min mark turns green at 5 min on the timer**; the break itself counts from 5 min away (engine).
 - **E2E tests run with reduced motion**, so they see final states (animation, count-up) at once; `npm run e2e:headed` plays them.
