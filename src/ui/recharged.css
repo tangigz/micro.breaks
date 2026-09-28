@@ -150,7 +150,8 @@
   opacity: 0;
 }
 .rc-play .rc-ripple {
-  animation: rc-ripple 1.4s ease-out var(--delay, 2.4s) both;
+  /* forwards, not both: before its start the ring stays hidden. */
+  animation: rc-ripple 1.4s ease-out var(--delay, 2.4s) forwards;
 }
 .rc-play .rc-pop {
   animation: rc-pop 0.8s cubic-bezier(0.2, 0.8, 0.2, 1.2) 2.4s both;
